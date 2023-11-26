@@ -1,5 +1,7 @@
-<<<<<<< HEAD
 # README
+
+# crypto-live-spread-golang
+Simple desktop app to display the bid-ask spread for selected market on a number of exchanges
 
 ## About
 
@@ -16,6 +18,5 @@ to this in your browser, and you can call your Go code from devtools.
 
 To build a redistributable, production mode package, use `wails build`.
 =======
-# crypto-live-spread-golang
-Simple desktop app to display the bid-ask spread for selected market on a number of exchanges
->>>>>>> origin/main
+
+

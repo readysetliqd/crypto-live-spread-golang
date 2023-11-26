@@ -1,12 +1,40 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import logo from './assets/images/logo-universal.png'
   import {Greet} from '../wailsjs/go/main/App.js'
+  import {FetchKrakenSpotPairs} from '../wailsjs/go/main/App.js'
+  import {ConnectKrakenSpotWebsocket} from '../wailsjs/go/main/App.js'
 
   let resultText: string = "Please enter your name below 👇"
   let name: string
+  let assets: {[key: string]: string;} = {}
+  let selectedAsset: string = "";
+  let krakenSpread: number[] = []
 
   function greet(): void {
     Greet(name).then(result => resultText = result)
+  }
+
+  async function fetchKrakenSpotPairs(): Promise<void> {
+    console.log('fetchKrakenSpotPairs called');
+    const result = await FetchKrakenSpotPairs();
+    console.log('FetchKrakenSpotPairs result', result);
+    assets = result;
+  }
+
+  async function connectKrakenSpotWebsocket(asset): Promise<void> {
+    console.log('connectKrakenSpotWebsocket called');
+    const result = await ConnectKrakenSpotWebsocket(asset)
+    console.log('ConnectKrakenSpotWebsocket result', result)
+  }
+
+  onMount(() => {
+    fetchKrakenSpotPairs();
+  });
+
+  const selectAsset = (event) => {
+    selectedAsset = event.target.value;
+    connectKrakenSpotWebsocket(selectedAsset)
   }
 </script>
 
@@ -17,6 +45,14 @@
     <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
     <button class="btn" on:click={greet}>Greet</button>
   </div>
+  <div>
+    <select bind:value={selectedAsset} on:change={selectAsset}>
+      {#each Object.entries(assets) as [_, value]}
+        <option value="{value}">{value}</option>
+      {/each}
+    </select>
+  </div>
+  <div class="selected-asset" id="selected-asset">{selectedAsset}</div>
 </main>
 
 <style>
