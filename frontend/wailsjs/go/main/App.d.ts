@@ -3,8 +3,32 @@
 
 export function ConnectKrakenSpotWebsocket(arg1:string):Promise<void>;
 
+export function FetchBinanceCoinmPairs():Promise<Array<string>>;
+
 export function FetchBinanceSpotPairs():Promise<Array<string>>;
 
+export function FetchBinanceUsSpotPairs():Promise<Array<string>>;
+
+export function FetchBinanceUsdmPairs():Promise<Array<string>>;
+
+export function FetchBitgetFuturesPairs():Promise<Array<string>>;
+
+export function FetchBitgetSpotPairs():Promise<Array<string>>;
+
+export function FetchBybitFuturesPairs():Promise<Array<string>>;
+
+export function FetchBybitSpotPairs():Promise<Array<string>>;
+
+export function FetchCoinbaseSpotPairs():Promise<Array<string>>;
+
+export function FetchKrakenFuturesPairs():Promise<Array<string>>;
+
 export function FetchKrakenSpotPairs():Promise<Array<string>>;
+
+export function FetchOkxSpotPairs():Promise<Array<string>>;
+
+export function FetchOkxSwapsPairs():Promise<Array<string>>;
+
+export function FetchUpbitSpotPairs():Promise<Array<string>>;
 
 export function Greet(arg1:string):Promise<string>;
