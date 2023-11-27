@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func FetchPairs() map[string]string {
+func FetchPairs() []string {
 	res, err := http.Get("https://api.kraken.com/0/public/AssetPairs")
 	if err != nil {
 		log.Fatal("http.Get error | ", err)
@@ -21,12 +21,12 @@ func FetchPairs() map[string]string {
 		log.Fatal("io.ReadAll error | ", err)
 	}
 
-	pairs := map[string]string{}
+	var pairs []string
 	json.Unmarshal(msg, &resp)
-	for k, el := range resp["result"].(map[string]interface{}) {
+	for _, el := range resp["result"].(map[string]interface{}) {
 		//KrakenPairsList = append(KrakenPairsList, k)
 		//KrakenPairsAltList = append(KrakenPairsAltList, el.(map[string]interface{})["wsname"].(string))
-		pairs[k] = el.(map[string]interface{})["wsname"].(string)
+		pairs = append(pairs, el.(map[string]interface{})["wsname"].(string))
 	}
 	// DEBUG
 	// sort.Slice(KrakenPairsAltList, func(i, j int) bool {

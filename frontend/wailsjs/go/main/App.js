@@ -6,6 +6,10 @@ export function ConnectKrakenSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectKrakenSpotWebsocket'](arg1);
 }
 
+export function FetchBinanceSpotPairs() {
+  return window['go']['main']['App']['FetchBinanceSpotPairs']();
+}
+
 export function FetchKrakenSpotPairs() {
   return window['go']['main']['App']['FetchKrakenSpotPairs']();
 }

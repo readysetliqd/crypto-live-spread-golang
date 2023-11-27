@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"slices"
 
+	binancespot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-spot"
 	krakenspot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/kraken-spot"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -30,8 +32,10 @@ func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Selected market: %s", name)
 }
 
-func (a *App) FetchKrakenSpotPairs() map[string]string {
-	return krakenspot.FetchPairs()
+func (a *App) FetchKrakenSpotPairs() []string {
+	s := krakenspot.FetchPairs()
+	slices.Sort(s)
+	return s
 }
 
 func (a *App) ConnectKrakenSpotWebsocket(pair string) {
@@ -48,4 +52,10 @@ func (a *App) ConnectKrakenSpotWebsocket(pair string) {
 			return
 		}
 	}
+}
+
+func (a *App) FetchBinanceSpotPairs() []string {
+	s := binancespot.FetchPairs()
+	slices.Sort(s)
+	return s
 }

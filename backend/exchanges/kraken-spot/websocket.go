@@ -11,15 +11,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type Spread struct {
-	Ws_received time.Time
-	Time        decimal.Decimal // seconds since epoch
-	Bid         decimal.Decimal
-	Ask         decimal.Decimal
-	BidVolume   decimal.Decimal
-	AskVolume   decimal.Decimal
-}
-
 const maxInstReconnectAttempts = 5
 const reconnectDelay = 30 // seconds
 const redialDelay = 30    //seconds

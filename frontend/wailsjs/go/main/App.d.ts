@@ -3,6 +3,8 @@
 
 export function ConnectKrakenSpotWebsocket(arg1:string):Promise<void>;
 
-export function FetchKrakenSpotPairs():Promise<{[key: string]: string}>;
+export function FetchBinanceSpotPairs():Promise<Array<string>>;
+
+export function FetchKrakenSpotPairs():Promise<Array<string>>;
 
 export function Greet(arg1:string):Promise<string>;
