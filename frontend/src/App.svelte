@@ -1,187 +1,192 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { EventsOn } from '../wailsjs/runtime'
-  import {FetchBinanceSpotPairs} from '../wailsjs/go/main/App.js'
-  import {FetchBinanceUsdmPairs} from '../wailsjs/go/main/App.js'
-  import {FetchBinanceCoinmPairs} from '../wailsjs/go/main/App.js'
-  import {FetchBinanceUsSpotPairs} from '../wailsjs/go/main/App.js'
-  import {FetchBitgetSpotPairs} from '../wailsjs/go/main/App.js'
-  import {FetchBitgetFuturesPairs} from '../wailsjs/go/main/App.js'
-  import {FetchBybitSpotPairs} from '../wailsjs/go/main/App.js'
-  import {FetchBybitFuturesPairs} from '../wailsjs/go/main/App.js'
-  import {FetchCoinbaseSpotPairs} from '../wailsjs/go/main/App.js'
-  import {FetchKrakenSpotPairs} from '../wailsjs/go/main/App.js'
-  import {FetchKrakenFuturesPairs} from '../wailsjs/go/main/App.js'
-  import {FetchOkxSpotPairs} from '../wailsjs/go/main/App.js'
-  import {FetchOkxSwapsPairs} from '../wailsjs/go/main/App.js'
-  import {FetchUpbitSpotPairs} from '../wailsjs/go/main/App.js'
-  import {ConnectKrakenSpotWebsocket} from '../wailsjs/go/main/App.js'
+  import { onMount } from 'svelte'
   import { Svroller } from "svrollbar"
+  import * as go from '../wailsjs/go/main/App.js'
 
-  let coin: string
-  let denom: string
-  let selectedAsset: string = "";
+  let coin: string = ''
+  let denom: string = ''
+  let denomDefault: string
+  let selectedAsset: string = ''
   let krakenSpread: number[] = [1, 2, 3]
   let pairsPlaceholder: string[] = []
+  
+  onMount(() => {
+    EventsOn("spreadData", (bidVolume, bid, ask, askVolume) => {
+      krakenSpread = [bidVolume, bid, ask, askVolume];
+    })
+  })
 
- function fetchPairs(exchange) {
-  console.log('fetchPairs called', exchange)
-  switch (exchange) {
-    case 'Binance':
-      fetchBinanceSpotPairs(exchange)
-      break
-    case 'Binance (USD-M)':
-      fetchBinanceUsdmPairs(exchange)
-      break
-    case 'Binance (COIN-M)':
-      fetchBinanceCoinmPairs(exchange)
-      break
-    case 'Binance US':
-      fetchBinanceUsSpotPairs(exchange)
-      break
-    case 'Bitget':
-      fetchBitgetSpotPairs(exchange)
-      break
-    case 'Bitget (Futures)':
-      fetchBitgetFuturesPairs(exchange)
-      break
-    case 'Bybit':
-      fetchBybitSpotPairs(exchange)
-      break
-    case 'Bybit (Futures)':
-      fetchBybitFuturesPairs(exchange)
-      break
-    case 'Coinbase':
-      fetchCoinbaseSpotPairs(exchange)
-      break
-    case 'Kraken':
-      fetchKrakenSpotPairs(exchange)
-      break
-    case 'Kraken (Futures)':
-      fetchKrakenFuturesPairs(exchange)
-      break
-    case 'Okx':
-      fetchOkxSpotPairs(exchange)
-      break
-    case 'Okx (Swaps)':
-      fetchOkxSwapsPairs(exchange)
-      break
-    case 'Upbit':
-      fetchUpbitSpotPairs(exchange)
-      break
+  $: if (denom == '') {
+    denomDefault = 'USD'
+  } else {
+    denomDefault = denom
   }
- }
 
+  function getRecommendedPairs(exchange) {
+    let coinInput: string
+    if (exchange == "Kraken" || exchange == "Kraken (Futures)" && coin == "BTC"){
+      coinInput = "XBT"
+    } else {
+      coinInput = coin
+    }
+    return exchanges[exchange].pairs.filter(pair => pair.includes(coinInput) && pair.includes(denomDefault))
+  }
+
+
+  function fetchPairs(exchange) {
+    console.log('fetchPairs called', exchange)
+    switch (exchange) {
+      case 'Binance':
+        fetchBinanceSpotPairs(exchange)
+        break
+      case 'Binance (USD-M)':
+        fetchBinanceUsdmPairs(exchange)
+        break
+      case 'Binance (COIN-M)':
+        fetchBinanceCoinmPairs(exchange)
+        break
+      case 'Binance US':
+        fetchBinanceUsSpotPairs(exchange)
+        break
+      case 'Bitget':
+        fetchBitgetSpotPairs(exchange)
+        break
+      case 'Bitget (Futures)':
+        fetchBitgetFuturesPairs(exchange)
+        break
+      case 'Bybit':
+        fetchBybitSpotPairs(exchange)
+        break
+      case 'Bybit (Futures)':
+        fetchBybitFuturesPairs(exchange)
+        break
+      case 'Coinbase':
+        fetchCoinbaseSpotPairs(exchange)
+        break
+      case 'Kraken':
+        fetchKrakenSpotPairs(exchange)
+        break
+      case 'Kraken (Futures)':
+        fetchKrakenFuturesPairs(exchange)
+        break
+      case 'Okx':
+        fetchOkxSpotPairs(exchange)
+        break
+      case 'Okx (Swaps)':
+        fetchOkxSwapsPairs(exchange)
+        break
+      case 'Upbit':
+        fetchUpbitSpotPairs(exchange)
+        break
+    }
+  }
 
   async function fetchBinanceSpotPairs(exchange): Promise<void> {
     console.log('fetchBinanceSpotPairs called')
-    const result = await FetchBinanceSpotPairs()
+    const result = await go.FetchBinanceSpotPairs()
     console.log('FetchBinanceSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchBinanceUsdmPairs(exchange): Promise<void> {
     console.log('fetchBinanceUsdmPairs called')
-    const result = await FetchBinanceUsdmPairs()
+    const result = await go.FetchBinanceUsdmPairs()
     console.log('FetchBinanceUsdmPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchBinanceCoinmPairs(exchange): Promise<void> {
     console.log('fetchBinanceCoinmPairs called')
-    const result = await FetchBinanceCoinmPairs()
+    const result = await go.FetchBinanceCoinmPairs()
     console.log('FetchBinanceCoinmPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchBinanceUsSpotPairs(exchange): Promise<void> {
     console.log('fetchBinanceUsSpotPairs called')
-    const result = await FetchBinanceUsSpotPairs()
+    const result = await go.FetchBinanceUsSpotPairs()
     console.log('FetchBinanceUsSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchBitgetSpotPairs(exchange): Promise<void> {
     console.log('fetchBitgetSpotPairs called')
-    const result = await FetchBitgetSpotPairs()
+    const result = await go.FetchBitgetSpotPairs()
     console.log('FetchBitgetSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchBitgetFuturesPairs(exchange): Promise<void> {
     console.log('fetchBitgetFuturesPairs called')
-    const result = await FetchBitgetFuturesPairs()
+    const result = await go.FetchBitgetFuturesPairs()
     console.log('FetchBitgetFuturesPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchBybitSpotPairs(exchange): Promise<void> {
     console.log('fetchBybitSpotPairs called')
-    const result = await FetchBybitSpotPairs()
+    const result = await go.FetchBybitSpotPairs()
     console.log('FetchBybitSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchBybitFuturesPairs(exchange): Promise<void> {
     console.log('fetchBybitFuturesPairs called')
-    const result = await FetchBybitFuturesPairs()
+    const result = await go.FetchBybitFuturesPairs()
     console.log('FetchBybitFuturesPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchCoinbaseSpotPairs(exchange): Promise<void> {
     console.log('fetchCoinbaseSpotPairs called')
-    const result = await FetchCoinbaseSpotPairs()
+    const result = await go.FetchCoinbaseSpotPairs()
     console.log('FetchCoinbaseSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchKrakenSpotPairs(exchange): Promise<void> {
     console.log('fetchKrakenSpotPairs called')
-    const result = await FetchKrakenSpotPairs()
+    const result = await go.FetchKrakenSpotPairs()
     console.log('FetchKrakenSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchKrakenFuturesPairs(exchange): Promise<void> {
     console.log('fetchKrakenFuturesPairs called')
-    const result = await FetchKrakenFuturesPairs()
+    const result = await go.FetchKrakenFuturesPairs()
     console.log('FetchKrakenFuturesPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchOkxSpotPairs(exchange): Promise<void> {
     console.log('fetchOkxSpotPairs called')
-    const result = await FetchOkxSpotPairs()
+    const result = await go.FetchOkxSpotPairs()
     console.log('FetchOkxSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function fetchOkxSwapsPairs(exchange): Promise<void> {
     console.log('fetchOkxSwapsPairs called')
-    const result = await FetchOkxSwapsPairs()
+    const result = await go.FetchOkxSwapsPairs()
     console.log('FetchOkxSwapsPairs result', result)
     exchanges[exchange].pairs = result
   }
   
   async function fetchUpbitSpotPairs(exchange): Promise<void> {
     console.log('fetchUpbitSpotPairs called')
-    const result = await FetchUpbitSpotPairs()
+    const result = await go.FetchUpbitSpotPairs()
     console.log('FetchUpbitSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
 
   async function connectKrakenSpotWebsocket(asset): Promise<void> {
     console.log('connectKrakenSpotWebsocket called');
-    const result = await ConnectKrakenSpotWebsocket(asset)
+    const result = await go.ConnectKrakenSpotWebsocket(asset)
     console.log('ConnectKrakenSpotWebsocket result', result)
   }
 
-  onMount(() => {
-    EventsOn("spreadData", (bidVolume, bid, ask, askVolume) => {
-      krakenSpread = [bidVolume, bid, ask, askVolume];
-    });
-  });
+
 
   const selectAsset = (event) => {
     selectedAsset = event.target.value;
@@ -189,23 +194,23 @@
   }
 
   let exchanges = {
-    "Binance": {category: "Spot", name: "Binance", checked: false, pairs: pairsPlaceholder},
-    "Binance US": {category: "Spot", name: "Binance US", checked: false, pairs: pairsPlaceholder},
-    "Bitget": {category: "Spot", name: "Bitget", checked: false, pairs: pairsPlaceholder},
-    "Coinbase": {category: "Spot", name: "Coinbase", checked: false, pairs: pairsPlaceholder},
-    "Okx": {category: "Spot", name: "Okx", checked: false, pairs: pairsPlaceholder},
-    "Kraken": {category: "Spot", name: "Kraken", checked: false, pairs: pairsPlaceholder},
-    "Bybit": {category: "Spot", name: "Bybit", checked: false, pairs: pairsPlaceholder},
-    "Upbit": {category: "Spot", name: "Upbit", checked: false, pairs: pairsPlaceholder},
-    "Kraken (Futures)": {category: "Futures", name: "Kraken (Futures)", checked: false, pairs: pairsPlaceholder},
-    "Binance (USD-M)": {category: "Futures", name: "Binance (USD-M)", checked: false, pairs: pairsPlaceholder},
-    "Binance (COIN-M)": {category: "Futures", name: "Binance (COIN-M)", checked: false, pairs: pairsPlaceholder},
-    "Bybit (Futures)": {category: "Futures", name: "Bybit (Futures)", checked: false, pairs: pairsPlaceholder},
-    "Okx (Swaps)": {category: "Futures", name: "Okx (Swaps)", checked: false, pairs: pairsPlaceholder},
-    "Bitget (Futures)": {category: "Futures", name: "Bitget (Futures)", checked: false, pairs: pairsPlaceholder},
-    "HyperliquidX": {category: "DEX", name: "HyperliquidX", checked: false, pairs: pairsPlaceholder},
-    "DYDX": {category: "DEX", name: "DYDX", checked: false, pairs: pairsPlaceholder},
-    "GMX": {category: "DEX", name: "GMX", checked: false, pairs: pairsPlaceholder},
+    "Binance": {category: "Spot", name: "Binance", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Binance US": {category: "Spot", name: "Binance US", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Bitget": {category: "Spot", name: "Bitget", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Coinbase": {category: "Spot", name: "Coinbase", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Okx": {category: "Spot", name: "Okx", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Kraken": {category: "Spot", name: "Kraken", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Bybit": {category: "Spot", name: "Bybit", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Upbit": {category: "Spot", name: "Upbit", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Kraken (Futures)": {category: "Futures", name: "Kraken (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Binance (USD-M)": {category: "Futures", name: "Binance (USD-M)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Binance (COIN-M)": {category: "Futures", name: "Binance (COIN-M)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Bybit (Futures)": {category: "Futures", name: "Bybit (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Okx (Swaps)": {category: "Futures", name: "Okx (Swaps)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Bitget (Futures)": {category: "Futures", name: "Bitget (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "HyperliquidX": {category: "DEX", name: "HyperliquidX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "DYDX": {category: "DEX", name: "DYDX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "GMX": {category: "DEX", name: "GMX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
   }
   let exchangeNames = Object.keys(exchanges)
 
@@ -216,9 +221,16 @@
     exchange.checked = !exchange.checked;
   }
 
+  $: {coin, denomDefault, 
+  Object.keys(exchanges).forEach((exchange) => {
+    exchanges[exchange].recommended = getRecommendedPairs(exchange);
+  });
+}
+
 </script>
 
 <main>
+  <div class="body">
   <div class="title">Enter coin to track below</div>
   <div class="input-box" id="input">
     <input autocomplete="off" bind:value={coin} class="input" id="coin" type="text" placeholder="BTC"/>
@@ -246,13 +258,11 @@
       </ul>
     </Svroller>
   </div>
-  <div class="body">
     {#each exchangeNames as exchange}
     {#if exchanges[exchange].checked}
     <table class="table">
       <thead>
         <tr>
-
           <th class="th">{exchange}</th>
           <th class="th">Bid Volume</th>
           <th class="th">Ask Price</th>
@@ -263,12 +273,22 @@
       </thead>
       <tbody>
         <tr>
-
           <td class="td">
             <select class="dropdown">
-              {#each exchanges[exchange].pairs as pair}
-              <option value="{pair}">{pair}</option>
-              {/each}
+              <optgroup label="Recommended">
+                {#if exchanges[exchange].recommended.length != 0}
+                {#each exchanges[exchange].recommended as pair}
+                <option value="{pair}">{pair}</option>
+                {/each}
+                {:else}
+                <option value="None" disabled>None</option>
+                {/if}
+              </optgroup>
+              <optgroup label="All Pairs">
+                {#each exchanges[exchange].pairs as pair}
+                <option value="{pair}">{pair}</option>
+                {/each}
+              </optgroup>
               </select>
           </td>
           <td class="td">0</td>
@@ -296,12 +316,14 @@
 </main>
 
 <style>
+  .body {
+    margin-left: 12rem;
+  }
   .title {
     height: 20px;
     line-height: 20px;
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
-    margin-left: 12rem;
   }
 
   .input-box .input {
@@ -313,7 +335,6 @@
     padding: 0 10px;
     background-color: rgba(240, 240, 240, 1);
     -webkit-font-smoothing: antialiased;
-    margin-left: 12rem;
     margin-top: 1rem;
   }
 
@@ -376,8 +397,6 @@
     padding: 0.5rem;
     border-bottom: 1px solid #d0d0d0;
   }
-  .table {
-    margin-left:13rem
-  }
+
 
 </style>
