@@ -74,6 +74,9 @@
       case 'Coinbase':
         fetchCoinbaseSpotPairs(exchange)
         break
+      case 'HyperliquidX':
+        fetchHyperliquidxPairs(exchange)
+        break
       case 'Kraken':
         fetchKrakenSpotPairs(exchange)
         break
@@ -121,6 +124,9 @@
       case 'Coinbase':
         connectCoinbaseSpotWebsocket(pair)
         break
+      case 'HyperliquidX':
+        connectHyperliquidxWebsocket(pair)
+        break
       case 'Kraken':
         connectKrakenSpotWebsocket(pair)
         break
@@ -140,171 +146,110 @@
   }
   //#region fetchExchangePairs(exchange) functions
   async function fetchBinanceSpotPairs(exchange): Promise<void> {
-    console.log('fetchBinanceSpotPairs called')
     const result = await go.FetchBinanceSpotPairs()
-    console.log('FetchBinanceSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchBinanceUsdmPairs(exchange): Promise<void> {
-    console.log('fetchBinanceUsdmPairs called')
     const result = await go.FetchBinanceUsdmPairs()
-    console.log('FetchBinanceUsdmPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchBinanceCoinmPairs(exchange): Promise<void> {
-    console.log('fetchBinanceCoinmPairs called')
     const result = await go.FetchBinanceCoinmPairs()
-    console.log('FetchBinanceCoinmPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchBinanceUsSpotPairs(exchange): Promise<void> {
-    console.log('fetchBinanceUsSpotPairs called')
     const result = await go.FetchBinanceUsSpotPairs()
-    console.log('FetchBinanceUsSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchBitgetSpotPairs(exchange): Promise<void> {
-    console.log('fetchBitgetSpotPairs called')
     const result = await go.FetchBitgetSpotPairs()
-    console.log('FetchBitgetSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchBitgetFuturesPairs(exchange): Promise<void> {
-    console.log('fetchBitgetFuturesPairs called')
     const result = await go.FetchBitgetFuturesPairs()
-    console.log('FetchBitgetFuturesPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchBybitSpotPairs(exchange): Promise<void> {
-    console.log('fetchBybitSpotPairs called')
     const result = await go.FetchBybitSpotPairs()
-    console.log('FetchBybitSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchBybitFuturesPairs(exchange): Promise<void> {
-    console.log('fetchBybitFuturesPairs called')
     const result = await go.FetchBybitFuturesPairs()
-    console.log('FetchBybitFuturesPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchCoinbaseSpotPairs(exchange): Promise<void> {
-    console.log('fetchCoinbaseSpotPairs called')
     const result = await go.FetchCoinbaseSpotPairs()
-    console.log('FetchCoinbaseSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
-
+  async function fetchHyperliquidxPairs(exchange): Promise<void> {
+    const result = await go.FetchHyperliquidxPairs()
+    exchanges[exchange].pairs = result
+  }
   async function fetchKrakenSpotPairs(exchange): Promise<void> {
-    console.log('fetchKrakenSpotPairs called')
     const result = await go.FetchKrakenSpotPairs()
-    console.log('FetchKrakenSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchKrakenFuturesPairs(exchange): Promise<void> {
-    console.log('fetchKrakenFuturesPairs called')
     const result = await go.FetchKrakenFuturesPairs()
-    console.log('FetchKrakenFuturesPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchOkxSpotPairs(exchange): Promise<void> {
-    console.log('fetchOkxSpotPairs called')
     const result = await go.FetchOkxSpotPairs()
-    console.log('FetchOkxSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
-
   async function fetchOkxSwapsPairs(exchange): Promise<void> {
-    console.log('fetchOkxSwapsPairs called')
     const result = await go.FetchOkxSwapsPairs()
-    console.log('FetchOkxSwapsPairs result', result)
     exchanges[exchange].pairs = result
   }
-  
   async function fetchUpbitSpotPairs(exchange): Promise<void> {
-    console.log('fetchUpbitSpotPairs called')
     const result = await go.FetchUpbitSpotPairs()
-    console.log('FetchUpbitSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
   //#endregion
   //#region connectExchangeWebsocket(pair) functions
   async function connectKrakenSpotWebsocket(pair): Promise<void> {
-    console.log('connectKrakenSpotWebsocket called')
     const result = await go.ConnectKrakenSpotWebsocket(pair)
   }
-
   async function connectBinanceSpotWebsocket(pair): Promise<void> {
-    console.log('connectBinanceSpotWebsocket called')
     const result = await go.ConnectBinanceSpotWebsocket(pair)
   }
-
   async function connectBinanceUsdmWebsocket(pair): Promise<void> {
-    console.log('connectBinanceUsdmWebsocket called')
     const result = await go.ConnectBinanceUsdmWebsocket(pair)
   }
-
   async function connectBinanceCoinmWebsocket(pair): Promise<void> {
-    console.log('connectBinanceCoinmWebsocket called')
     const result = await go.ConnectBinanceCoinmWebsocket(pair)
   }
-
   async function connectBinanceUsWebsocket(pair): Promise<void> {
-    console.log('connectBinanceUsWebsocket called')
     const result = await go.ConnectBinanceUsWebsocket(pair)
   }
-
   async function connectBitgetSpotWebsocket(pair): Promise<void> {
-    console.log('connectBitgetSpotWebsocket() called')
     const result = await go.ConnectBitgetSpotWebsocket(pair)
   }
-
   async function connectBitgetFuturesWebsocket(pair): Promise<void> {
-    console.log('connectBitgetFuturesWebsocket() called')
     const result = await go.ConnectBitgetFuturesWebsocket(pair)
   }
-
   async function connectBybitSpotWebsocket(pair): Promise<void> {
-    console.log('connectBybitSpotWebsocket() called')
     const result = await go.ConnectBybitSpotWebsocket(pair)
   }
-
   async function connectBybitFuturesWebsocket(pair): Promise<void> {
-    console.log('connectBybitFuturesWebsocket() called')
     const result = await go.ConnectBybitFuturesWebsocket(pair)
   }
-
   async function connectCoinbaseSpotWebsocket(pair): Promise<void> {
-    console.log('connectCoinbaseSpotWebsocket() caled')
     const result = await go.ConnectCoinbaseSpotWebsocket(pair)
   }
-
+  async function connectHyperliquidxWebsocket(pair): Promise<void> {
+    const result = await go.ConnectHyperliquidxWebsocket(pair)
+  }
   async function connectKrakenFuturesWebsocket(pair): Promise<void> {
-    console.log('connectKrakenFuturesWebsocket() called')
     const result = await go.ConnectKrakenFuturesWebsocket(pair)
   }
-
   async function connectOkxSpotWebsocket(pair): Promise<void> {
-    console.log('connectOkxSpotWebsocket() called')
     const result = await go.ConnectOkxSpotWebsocket(pair)
   }
-
   async function connectOkxSwapsWebsocket(pair): Promise<void> {
-    console.log('connectOkxSwapsWebsocket() called')
     const result = await go.ConnectOkxSwapsWebsocket(pair)
   }
-
   async function connectUpbitWebsocket(pair): Promise<void> {
-    console.log('connectUpbitWebsocket() called')
     const result = await go.ConnectUpbitWebsocket(pair)
   }
   //#endregion

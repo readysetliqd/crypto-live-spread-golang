@@ -38,6 +38,10 @@ export function ConnectCoinbaseSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectCoinbaseSpotWebsocket'](arg1);
 }
 
+export function ConnectHyperliquidxWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectHyperliquidxWebsocket'](arg1);
+}
+
 export function ConnectKrakenFuturesWebsocket(arg1) {
   return window['go']['main']['App']['ConnectKrakenFuturesWebsocket'](arg1);
 }
@@ -92,6 +96,10 @@ export function FetchBybitSpotPairs() {
 
 export function FetchCoinbaseSpotPairs() {
   return window['go']['main']['App']['FetchCoinbaseSpotPairs']();
+}
+
+export function FetchHyperliquidxPairs() {
+  return window['go']['main']['App']['FetchHyperliquidxPairs']();
 }
 
 export function FetchKrakenFuturesPairs() {

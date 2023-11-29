@@ -19,6 +19,8 @@ export function ConnectBybitSpotWebsocket(arg1:string):Promise<void>;
 
 export function ConnectCoinbaseSpotWebsocket(arg1:string):Promise<void>;
 
+export function ConnectHyperliquidxWebsocket(arg1:string):Promise<void>;
+
 export function ConnectKrakenFuturesWebsocket(arg1:string):Promise<void>;
 
 export function ConnectKrakenSpotWebsocket(arg1:string):Promise<void>;
@@ -46,6 +48,8 @@ export function FetchBybitFuturesPairs():Promise<Array<string>>;
 export function FetchBybitSpotPairs():Promise<Array<string>>;
 
 export function FetchCoinbaseSpotPairs():Promise<Array<string>>;
+
+export function FetchHyperliquidxPairs():Promise<Array<string>>;
 
 export function FetchKrakenFuturesPairs():Promise<Array<string>>;
 

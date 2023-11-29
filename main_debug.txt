@@ -3,22 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/readysetliqd/crypto-live-spread-golang/backend/data"
-	bybitspot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/bybit-spot"
+	"github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/hyperliquidx"
 )
 
-func ConnectBybitSpotWebsocket(pair string) {
-	channelBybitSpot := make(chan data.Spread)
-	go bybitspot.GetSpread(channelBybitSpot, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBybitSpot:
-			log.Println(spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
 func main() {
-	ConnectBybitSpotWebsocket("BTCUSDT")
+	log.Println(hyperliquidx.FetchPairs())
 }
