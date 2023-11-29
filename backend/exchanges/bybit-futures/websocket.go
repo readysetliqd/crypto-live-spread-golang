@@ -84,7 +84,6 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 				} else if resp["type"].(string) == "delta" {
 					if len(respInfc["a"].([]interface{})) > 0 {
 						for _, el := range respInfc["a"].([]interface{}) {
-							log.Println(el)
 							if el.([]interface{})[1].(string) != "0" {
 								ask, err = decimal.NewFromString(el.([]interface{})[0].(string))
 								if err != nil {

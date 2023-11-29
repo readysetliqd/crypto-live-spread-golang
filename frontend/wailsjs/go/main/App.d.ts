@@ -19,6 +19,8 @@ export function ConnectBybitSpotWebsocket(arg1:string):Promise<void>;
 
 export function ConnectCoinbaseSpotWebsocket(arg1:string):Promise<void>;
 
+export function ConnectKrakenFuturesWebsocket(arg1:string):Promise<void>;
+
 export function ConnectKrakenSpotWebsocket(arg1:string):Promise<void>;
 
 export function FetchBinanceCoinmPairs():Promise<Array<string>>;

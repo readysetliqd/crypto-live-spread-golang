@@ -38,6 +38,10 @@ export function ConnectCoinbaseSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectCoinbaseSpotWebsocket'](arg1);
 }
 
+export function ConnectKrakenFuturesWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectKrakenFuturesWebsocket'](arg1);
+}
+
 export function ConnectKrakenSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectKrakenSpotWebsocket'](arg1);
 }

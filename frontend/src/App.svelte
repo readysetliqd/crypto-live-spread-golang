@@ -124,9 +124,9 @@
       case 'Kraken':
         connectKrakenSpotWebsocket(pair)
         break
-      // case 'Kraken (Futures)':
-      //   connectKrakenFuturesWebsocket(pair)
-      //   break
+      case 'Kraken (Futures)':
+        connectKrakenFuturesWebsocket(pair)
+        break
       // case 'Okx':
       //   connectOkxSpotWebsocket(pair)
       //   break
@@ -286,6 +286,11 @@
   async function connectCoinbaseSpotWebsocket(pair): Promise<void> {
     console.log('connectCoinbaseSpotWebsocket() caled')
     const result = await go.ConnectCoinbaseSpotWebsocket(pair)
+  }
+
+  async function connectKrakenFuturesWebsocket(pair): Promise<void> {
+    console.log('connectKrakenFuturesWebsocket() called')
+    const result = await go.ConnectKrakenFuturesWebsocket(pair)
   }
   //#endregion
 

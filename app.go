@@ -164,6 +164,18 @@ func (a *App) ConnectKrakenSpotWebsocket(pair string) {
 	}
 }
 
+func (a *App) ConnectKrakenFuturesWebsocket(pair string) {
+	channelKrakenFutures := make(chan data.Spread)
+	go krakenfutures.GetSpread(channelKrakenFutures, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelKrakenFutures:
+			runtime.EventsEmit(a.ctx, "spreadData", "Kraken (Futures)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
 func (a *App) FetchBinanceSpotPairs() []string {
 	s := binancespot.FetchPairs()
 	slices.Sort(s)
