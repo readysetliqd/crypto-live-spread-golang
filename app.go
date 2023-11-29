@@ -140,6 +140,18 @@ func (a *App) ConnectBybitFuturesWebsocket(pair string) {
 	}
 }
 
+func (a *App) ConnectCoinbaseSpotWebsocket(pair string) {
+	channelCoinbaseSpot := make(chan data.Spread)
+	go coinbasespot.GetSpread(channelCoinbaseSpot, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelCoinbaseSpot:
+			runtime.EventsEmit(a.ctx, "spreadData", "Coinbase", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
 func (a *App) ConnectKrakenSpotWebsocket(pair string) {
 	channelKrakenSpot := make(chan data.Spread)
 	go krakenspot.GetSpread(channelKrakenSpot, pair)

@@ -118,9 +118,9 @@
       case 'Bybit (Futures)':
         connectBybitFuturesWebsocket(pair)
         break
-      // case 'Coinbase':
-      //   connectCoinbaseSpotWebsocket(pair)
-      //   break
+      case 'Coinbase':
+        connectCoinbaseSpotWebsocket(pair)
+        break
       case 'Kraken':
         connectKrakenSpotWebsocket(pair)
         break
@@ -281,6 +281,11 @@
   async function connectBybitFuturesWebsocket(pair): Promise<void> {
     console.log('connectBybitFuturesWebsocket() called')
     const result = await go.ConnectBybitFuturesWebsocket(pair)
+  }
+
+  async function connectCoinbaseSpotWebsocket(pair): Promise<void> {
+    console.log('connectCoinbaseSpotWebsocket() caled')
+    const result = await go.ConnectCoinbaseSpotWebsocket(pair)
   }
   //#endregion
 
