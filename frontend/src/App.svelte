@@ -133,9 +133,9 @@
       case 'Okx (Swaps)':
         connectOkxSwapsWebsocket(pair)
         break
-      // case 'Upbit':
-      //   connectUpbitSpotWebsocket(pair)
-      //   break
+      case 'Upbit':
+        connectUpbitWebsocket(pair)
+        break
     }
   }
   //#region fetchExchangePairs(exchange) functions
@@ -303,6 +303,10 @@
     const result = await go.ConnectOkxSwapsWebsocket(pair)
   }
 
+  async function connectUpbitWebsocket(pair): Promise<void> {
+    console.log('connectUpbitWebsocket() called')
+    const result = await go.ConnectUpbitWebsocket(pair)
+  }
   //#endregion
 
   const selectPair= (event) => {
@@ -375,7 +379,7 @@
         <tr>
           <th class="th">{exchange}</th>
           <th class="th">Bid Volume</th>
-          <th class="th">Ask Price</th>
+          <th class="th">Bid Price</th>
           <th class="th">Ask Price</th>
           <th class="th">Ask Volume</th>
         </tr>

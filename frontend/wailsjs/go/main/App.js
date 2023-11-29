@@ -54,6 +54,10 @@ export function ConnectOkxSwapsWebsocket(arg1) {
   return window['go']['main']['App']['ConnectOkxSwapsWebsocket'](arg1);
 }
 
+export function ConnectUpbitWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectUpbitWebsocket'](arg1);
+}
+
 export function FetchBinanceCoinmPairs() {
   return window['go']['main']['App']['FetchBinanceCoinmPairs']();
 }

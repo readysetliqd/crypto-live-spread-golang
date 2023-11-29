@@ -27,6 +27,8 @@ export function ConnectOkxSpotWebsocket(arg1:string):Promise<void>;
 
 export function ConnectOkxSwapsWebsocket(arg1:string):Promise<void>;
 
+export function ConnectUpbitWebsocket(arg1:string):Promise<void>;
+
 export function FetchBinanceCoinmPairs():Promise<Array<string>>;
 
 export function FetchBinanceSpotPairs():Promise<Array<string>>;

@@ -200,6 +200,18 @@ func (a *App) ConnectOkxSwapsWebsocket(pair string) {
 	}
 }
 
+func (a *App) ConnectUpbitWebsocket(pair string) {
+	channelUpbit := make(chan data.Spread)
+	go upbit.GetSpread(channelUpbit, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelUpbit:
+			runtime.EventsEmit(a.ctx, "spreadData", "Upbit", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
 func (a *App) FetchBinanceSpotPairs() []string {
 	s := binancespot.FetchPairs()
 	slices.Sort(s)
