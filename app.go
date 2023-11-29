@@ -9,7 +9,7 @@ import (
 	binancecoinm "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-coinm-futures"
 	binancespot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-spot"
 	binanceusdm "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-usdm-futures"
-	binanceusspot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binanceus-spot"
+	binanceus "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binanceus-spot"
 	bitgetfutures "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/bitget-futures"
 	bitgetspot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/bitget-spot"
 	bybitfutures "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/bybit-futures"
@@ -45,7 +45,6 @@ func (a *App) Greet(name string) string {
 }
 
 func (a *App) ConnectBinanceSpotWebsocket(pair string) {
-	var quit chan struct{} //nil
 	channelBinanceSpot := make(chan data.Spread)
 	go binancespot.GetSpread(channelBinanceSpot, pair)
 	var spreadData = data.Spread{}
@@ -53,14 +52,11 @@ func (a *App) ConnectBinanceSpotWebsocket(pair string) {
 		select {
 		case spreadData = <-channelBinanceSpot:
 			runtime.EventsEmit(a.ctx, "spreadData", "Binance", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		case <-quit:
-			return
 		}
 	}
 }
 
 func (a *App) ConnectBinanceUsdmWebsocket(pair string) {
-	var quit chan struct{} //nil
 	channelBinanceUsdm := make(chan data.Spread)
 	go binanceusdm.GetSpread(channelBinanceUsdm, pair)
 	var spreadData = data.Spread{}
@@ -68,14 +64,11 @@ func (a *App) ConnectBinanceUsdmWebsocket(pair string) {
 		select {
 		case spreadData = <-channelBinanceUsdm:
 			runtime.EventsEmit(a.ctx, "spreadData", "Binance (USD-M)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		case <-quit:
-			return
 		}
 	}
 }
 
 func (a *App) ConnectBinanceCoinmWebsocket(pair string) {
-	var quit chan struct{} //nil
 	channelBinanceCoinm := make(chan data.Spread)
 	go binancecoinm.GetSpread(channelBinanceCoinm, pair)
 	var spreadData = data.Spread{}
@@ -83,14 +76,47 @@ func (a *App) ConnectBinanceCoinmWebsocket(pair string) {
 		select {
 		case spreadData = <-channelBinanceCoinm:
 			runtime.EventsEmit(a.ctx, "spreadData", "Binance (COIN-M)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		case <-quit:
-			return
+		}
+	}
+}
+
+func (a *App) ConnectBinanceUsWebsocket(pair string) {
+	channelBinanceUs := make(chan data.Spread)
+	go binanceus.GetSpread(channelBinanceUs, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelBinanceUs:
+			runtime.EventsEmit(a.ctx, "spreadData", "Binance US", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
+func (a *App) ConnectBitgetSpotWebsocket(pair string) {
+	channelBitgetSpot := make(chan data.Spread)
+	go bitgetspot.GetSpread(channelBitgetSpot, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelBitgetSpot:
+			runtime.EventsEmit(a.ctx, "spreadData", "Bitget", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
+func (a *App) ConnectBitgetFuturesWebsocket(pair string) {
+	channelBitgetFutures := make(chan data.Spread)
+	go bitgetfutures.GetSpread(channelBitgetFutures, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelBitgetFutures:
+			runtime.EventsEmit(a.ctx, "spreadData", "Bitget (Futures)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
 		}
 	}
 }
 
 func (a *App) ConnectKrakenSpotWebsocket(pair string) {
-	var quit chan struct{} //nil
 	channelKrakenSpot := make(chan data.Spread)
 	go krakenspot.GetSpread(channelKrakenSpot, pair)
 	var spreadData = data.Spread{}
@@ -98,8 +124,6 @@ func (a *App) ConnectKrakenSpotWebsocket(pair string) {
 		select {
 		case spreadData = <-channelKrakenSpot:
 			runtime.EventsEmit(a.ctx, "spreadData", "Kraken", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		case <-quit:
-			return
 		}
 	}
 }
@@ -123,7 +147,7 @@ func (a *App) FetchBinanceCoinmPairs() []string {
 }
 
 func (a *App) FetchBinanceUsSpotPairs() []string {
-	s := binanceusspot.FetchPairs()
+	s := binanceus.FetchPairs()
 	slices.Sort(s)
 	return s
 }

@@ -1,4 +1,4 @@
-package binanceusspot
+package binanceus
 
 import (
 	"encoding/json"

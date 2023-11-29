@@ -5,7 +5,13 @@ export function ConnectBinanceCoinmWebsocket(arg1:string):Promise<void>;
 
 export function ConnectBinanceSpotWebsocket(arg1:string):Promise<void>;
 
+export function ConnectBinanceUsWebsocket(arg1:string):Promise<void>;
+
 export function ConnectBinanceUsdmWebsocket(arg1:string):Promise<void>;
+
+export function ConnectBitgetFuturesWebsocket(arg1:string):Promise<void>;
+
+export function ConnectBitgetSpotWebsocket(arg1:string):Promise<void>;
 
 export function ConnectKrakenSpotWebsocket(arg1:string):Promise<void>;
 

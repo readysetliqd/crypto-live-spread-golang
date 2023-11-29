@@ -8,7 +8,6 @@ import (
 
 type Spread struct {
 	WsReceived time.Time
-	Time       decimal.Decimal // seconds since epoch
 	Bid        decimal.Decimal
 	Ask        decimal.Decimal
 	BidVolume  decimal.Decimal

@@ -54,7 +54,6 @@ func GetSpread(update_channel chan data.Spread, pair string) {
 				log.Fatal(err)
 			} else {
 				wsReceived := time.Now()
-				var time decimal.Decimal
 				var bid decimal.Decimal
 				var ask decimal.Decimal
 				var bid_volume decimal.Decimal
@@ -70,10 +69,6 @@ func GetSpread(update_channel chan data.Spread, pair string) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				time, err = decimal.NewFromString(resp_interface[2].(string))
-				if err != nil {
-					log.Fatal(err)
-				}
 				bid_volume, err = decimal.NewFromString(resp_interface[3].(string))
 				if err != nil {
 					log.Fatal(err)
@@ -82,7 +77,7 @@ func GetSpread(update_channel chan data.Spread, pair string) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				update_channel <- data.Spread{WsReceived: wsReceived, Time: time, Bid: bid, Ask: ask, BidVolume: bid_volume, AskVolume: ask_volume}
+				update_channel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bid_volume, AskVolume: ask_volume}
 			}
 		}
 	}

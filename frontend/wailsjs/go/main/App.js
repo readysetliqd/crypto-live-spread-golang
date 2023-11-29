@@ -10,8 +10,20 @@ export function ConnectBinanceSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectBinanceSpotWebsocket'](arg1);
 }
 
+export function ConnectBinanceUsWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectBinanceUsWebsocket'](arg1);
+}
+
 export function ConnectBinanceUsdmWebsocket(arg1) {
   return window['go']['main']['App']['ConnectBinanceUsdmWebsocket'](arg1);
+}
+
+export function ConnectBitgetFuturesWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectBitgetFuturesWebsocket'](arg1);
+}
+
+export function ConnectBitgetSpotWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectBitgetSpotWebsocket'](arg1);
 }
 
 export function ConnectKrakenSpotWebsocket(arg1) {

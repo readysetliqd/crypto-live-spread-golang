@@ -3,6 +3,7 @@
   import { onMount } from 'svelte'
   import { Svroller } from "svrollbar"
   import * as go from '../wailsjs/go/main/App.js'
+    import { group_outros } from 'svelte/internal';
 
   let coin: string = ''
   let denom: string = ''
@@ -102,15 +103,15 @@
       case 'Binance (COIN-M)':
         connectBinanceCoinmWebsocket(pair)
         break
-      // case 'Binance US':
-      //   connectBinanceUsSpotWebsocket(pair)
-      //   break
-      // case 'Bitget':
-      //   connectBitgetSpotWebsocket(pair)
-      //   break
-      // case 'Bitget (Futures)':
-      //   connectBitgetFuturesWebsocket(pair)
-      //   break
+      case 'Binance US':
+        connectBinanceUsWebsocket(pair)
+        break
+      case 'Bitget':
+        connectBitgetSpotWebsocket(pair)
+        break
+      case 'Bitget (Futures)':
+        connectBitgetFuturesWebsocket(pair)
+        break
       // case 'Bybit':
       //   connectBybitSpotWebsocket(pair)
       //   break
@@ -238,23 +239,38 @@
   //#endregion
   //#region connectExchangeWebsocket(pair) functions
   async function connectKrakenSpotWebsocket(pair): Promise<void> {
-    console.log('connectKrakenSpotWebsocket called');
+    console.log('connectKrakenSpotWebsocket called')
     const result = await go.ConnectKrakenSpotWebsocket(pair)
   }
 
   async function connectBinanceSpotWebsocket(pair): Promise<void> {
-    console.log('connectBinanceSpotWebsocket called');
+    console.log('connectBinanceSpotWebsocket called')
     const result = await go.ConnectBinanceSpotWebsocket(pair)
   }
 
   async function connectBinanceUsdmWebsocket(pair): Promise<void> {
-    console.log('connectBinanceUsdmWebsocket called');
+    console.log('connectBinanceUsdmWebsocket called')
     const result = await go.ConnectBinanceUsdmWebsocket(pair)
   }
 
   async function connectBinanceCoinmWebsocket(pair): Promise<void> {
-    console.log('connectBinanceCoinmWebsocket called');
+    console.log('connectBinanceCoinmWebsocket called')
     const result = await go.ConnectBinanceCoinmWebsocket(pair)
+  }
+
+  async function connectBinanceUsWebsocket(pair): Promise<void> {
+    console.log('connectBinanceUsWebsocket called')
+    const result = await go.ConnectBinanceUsWebsocket(pair)
+  }
+
+  async function connectBitgetSpotWebsocket(pair): Promise<void> {
+    console.log('connectBitgetSpotWebsocket() called')
+    const result = await go.ConnectBitgetSpotWebsocket(pair)
+  }
+
+  async function connectBitgetFuturesWebsocket(pair): Promise<void> {
+    console.log('connectBitgetFuturesWebsocket() called')
+    const result = await go.ConnectBitgetFuturesWebsocket(pair)
   }
   //#endregion
 
