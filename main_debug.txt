@@ -1,0 +1,26 @@
+package main_test
+
+import (
+	binancespot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-spot"
+)
+
+func ConnectBinanceSpotWebsocket(pair string) {
+	var quit chan struct{} //nil
+	channelBinanceSpot := make(chan binancespot.Spread)
+	go binancespot.BinanceSpread(channelBinanceSpot, pair)
+	var spreadData binancespot.Spread
+	spreadData = spreadData // DEBUG delete this line
+	for {
+		select {
+		case spreadData = <-channelBinanceSpot:
+			// log.Println("Binance:", spreadData)
+			// runtime.EventsEmit(a.ctx, "spreadData", "Binance", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		case <-quit:
+			return
+		}
+	}
+}
+
+func main_test() {
+	ConnectBinanceSpotWebsocket("BTCUSDT")
+}
