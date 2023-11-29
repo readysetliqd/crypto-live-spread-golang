@@ -26,6 +26,14 @@ export function ConnectBitgetSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectBitgetSpotWebsocket'](arg1);
 }
 
+export function ConnectBybitFuturesWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectBybitFuturesWebsocket'](arg1);
+}
+
+export function ConnectBybitSpotWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectBybitSpotWebsocket'](arg1);
+}
+
 export function ConnectKrakenSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectKrakenSpotWebsocket'](arg1);
 }

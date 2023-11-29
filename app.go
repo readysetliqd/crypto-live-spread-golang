@@ -116,6 +116,30 @@ func (a *App) ConnectBitgetFuturesWebsocket(pair string) {
 	}
 }
 
+func (a *App) ConnectBybitSpotWebsocket(pair string) {
+	channelBybitSpot := make(chan data.Spread)
+	go bybitspot.GetSpread(channelBybitSpot, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelBybitSpot:
+			runtime.EventsEmit(a.ctx, "spreadData", "Bybit", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
+func (a *App) ConnectBybitFuturesWebsocket(pair string) {
+	channelBybitFutures := make(chan data.Spread)
+	go bybitfutures.GetSpread(channelBybitFutures, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelBybitFutures:
+			runtime.EventsEmit(a.ctx, "spreadData", "Bybit (Futures)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
 func (a *App) ConnectKrakenSpotWebsocket(pair string) {
 	channelKrakenSpot := make(chan data.Spread)
 	go krakenspot.GetSpread(channelKrakenSpot, pair)

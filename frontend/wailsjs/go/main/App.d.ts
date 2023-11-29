@@ -13,6 +13,10 @@ export function ConnectBitgetFuturesWebsocket(arg1:string):Promise<void>;
 
 export function ConnectBitgetSpotWebsocket(arg1:string):Promise<void>;
 
+export function ConnectBybitFuturesWebsocket(arg1:string):Promise<void>;
+
+export function ConnectBybitSpotWebsocket(arg1:string):Promise<void>;
+
 export function ConnectKrakenSpotWebsocket(arg1:string):Promise<void>;
 
 export function FetchBinanceCoinmPairs():Promise<Array<string>>;
