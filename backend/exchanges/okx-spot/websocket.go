@@ -1,10 +1,9 @@
-package bitgetfutures
+package okxspot
 
 import (
 	"bytes"
 	"encoding/json"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -17,10 +16,6 @@ var pong = []byte{0} // TO DO: figure out what pong frames are
 // Accepts a channel and a pair. Connects to websocket api to updated channel
 // with the live bid/ask spread for that pair
 func GetSpread(updateChannel chan data.Spread, pair string) {
-	// Bitget futures REST API returns pairs with suffixes eg _UMCBL, however
-	// these pairs are only acceptable streams to subscribe in private streams
-	// The public websocket streams accept base pairs eg BTCUSDT_UMCBL -> BTCUSDT
-	pair = strings.Split(pair, "_")[0]
 	defer close(updateChannel)
 	var initResp map[string]interface{}
 	var err error
@@ -30,7 +25,7 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 	}
 	defer c.Close()
 
-	payload := "{\"op\": \"subscribe\", \"args\": [{\"instType\": \"mc\",\"channel\": \"ticker\",\"instId\": \"" + pair + "\"}]}"
+	payload := "{\"op\": \"subscribe\", \"args\": [{\"channel\": \"tickers\",\"instId\": \"" + pair + "\"}]}"
 	log.Println(payload)
 	subscribeChannel(c, initResp, payload)
 
@@ -40,12 +35,12 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 	for {
 		_, msg, err = c.ReadMessage()
 		if err != nil {
-			log.Fatal("Bitget c.ReadMessage() err | ", err)
+			log.Fatal("Okx c.ReadMessage() err | ", err)
 			// TO DO: change from log.Fatal and implement reconnect
 			// c, err = attemptReconnect(initResp)
 			// subscribeChannel(c, initResp, payload)
 			// if err != nil {
-			// 	log.Fatal("Bitget c.ReadMessage() err | ", err)
+			// 	log.Fatal("Okx c.ReadMessage() err | ", err)
 			// }
 		} else if !bytes.Equal(pong, msg) { //not a pong message
 			err := json.Unmarshal(msg, &resp)
@@ -60,11 +55,11 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 				var err error
 				respInfc := resp["data"].([]interface{})[0]
 
-				bid, err = decimal.NewFromString(respInfc.(map[string]interface{})["bestBid"].(string))
+				bid, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidPx"].(string))
 				if err != nil {
 					log.Fatal(err)
 				}
-				ask, err = decimal.NewFromString(respInfc.(map[string]interface{})["bestAsk"].(string))
+				ask, err = decimal.NewFromString(respInfc.(map[string]interface{})["askPx"].(string))
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -83,7 +78,7 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 }
 
 func dial(initResp map[string]interface{}) (*websocket.Conn, error) {
-	c, _, err := websocket.DefaultDialer.Dial("wss://ws.bitget.com/mix/v1/stream", nil)
+	c, _, err := websocket.DefaultDialer.Dial("wss://ws.okx.com:8443/ws/v5/public", nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 		// TO DO: implement redial and change to log.Println above

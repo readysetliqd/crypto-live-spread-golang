@@ -127,12 +127,12 @@
       case 'Kraken (Futures)':
         connectKrakenFuturesWebsocket(pair)
         break
-      // case 'Okx':
-      //   connectOkxSpotWebsocket(pair)
-      //   break
-      // case 'Okx (Swaps)':
-      //   connectOkxSwapsWebsocket(pair)
-      //   break
+      case 'Okx':
+        connectOkxSpotWebsocket(pair)
+        break
+      case 'Okx (Swaps)':
+        connectOkxSwapsWebsocket(pair)
+        break
       // case 'Upbit':
       //   connectUpbitSpotWebsocket(pair)
       //   break
@@ -292,6 +292,17 @@
     console.log('connectKrakenFuturesWebsocket() called')
     const result = await go.ConnectKrakenFuturesWebsocket(pair)
   }
+
+  async function connectOkxSpotWebsocket(pair): Promise<void> {
+    console.log('connectOkxSpotWebsocket() called')
+    const result = await go.ConnectOkxSpotWebsocket(pair)
+  }
+
+  async function connectOkxSwapsWebsocket(pair): Promise<void> {
+    console.log('connectOkxSwapsWebsocket() called')
+    const result = await go.ConnectOkxSwapsWebsocket(pair)
+  }
+
   //#endregion
 
   const selectPair= (event) => {

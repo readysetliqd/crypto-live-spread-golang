@@ -50,8 +50,8 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 				wsReceived := time.Now()
 				var bid decimal.Decimal
 				var ask decimal.Decimal
-				var bid_volume decimal.Decimal
-				var ask_volume decimal.Decimal
+				var bidVolume decimal.Decimal
+				var askVolume decimal.Decimal
 				var err error
 				respInfc := resp["data"].([]interface{})[0]
 
@@ -63,15 +63,15 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				bid_volume, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidSz"].(string))
+				bidVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidSz"].(string))
 				if err != nil {
 					log.Fatal(err)
 				}
-				ask_volume, err = decimal.NewFromString(respInfc.(map[string]interface{})["askSz"].(string))
+				askVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["askSz"].(string))
 				if err != nil {
 					log.Fatal(err)
 				}
-				updateChannel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bid_volume, AskVolume: ask_volume}
+				updateChannel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bidVolume, AskVolume: askVolume}
 			}
 		}
 	}

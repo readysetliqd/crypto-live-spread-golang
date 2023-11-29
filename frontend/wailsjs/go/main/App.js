@@ -46,6 +46,14 @@ export function ConnectKrakenSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectKrakenSpotWebsocket'](arg1);
 }
 
+export function ConnectOkxSpotWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectOkxSpotWebsocket'](arg1);
+}
+
+export function ConnectOkxSwapsWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectOkxSwapsWebsocket'](arg1);
+}
+
 export function FetchBinanceCoinmPairs() {
   return window['go']['main']['App']['FetchBinanceCoinmPairs']();
 }

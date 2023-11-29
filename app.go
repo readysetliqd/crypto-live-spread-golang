@@ -176,6 +176,30 @@ func (a *App) ConnectKrakenFuturesWebsocket(pair string) {
 	}
 }
 
+func (a *App) ConnectOkxSpotWebsocket(pair string) {
+	channelOkxSpot := make(chan data.Spread)
+	go okxspot.GetSpread(channelOkxSpot, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelOkxSpot:
+			runtime.EventsEmit(a.ctx, "spreadData", "Okx", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
+func (a *App) ConnectOkxSwapsWebsocket(pair string) {
+	channelOkxSwaps := make(chan data.Spread)
+	go okxswaps.GetSpread(channelOkxSwaps, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelOkxSwaps:
+			runtime.EventsEmit(a.ctx, "spreadData", "Okx (Swaps)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
 func (a *App) FetchBinanceSpotPairs() []string {
 	s := binancespot.FetchPairs()
 	slices.Sort(s)

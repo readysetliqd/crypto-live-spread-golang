@@ -23,6 +23,10 @@ export function ConnectKrakenFuturesWebsocket(arg1:string):Promise<void>;
 
 export function ConnectKrakenSpotWebsocket(arg1:string):Promise<void>;
 
+export function ConnectOkxSpotWebsocket(arg1:string):Promise<void>;
+
+export function ConnectOkxSwapsWebsocket(arg1:string):Promise<void>;
+
 export function FetchBinanceCoinmPairs():Promise<Array<string>>;
 
 export function FetchBinanceSpotPairs():Promise<Array<string>>;
