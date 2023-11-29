@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/readysetliqd/crypto-live-spread-golang/backend/data"
 	"github.com/shopspring/decimal"
 )
 
@@ -16,7 +17,7 @@ var pingFrame = []byte{0} // TO DO: figure out what a pingframe is
 
 // Accepts a channel and a pair. Connects to websocket api to updated channel
 // with the live bid/ask spread for that pair
-func GetSpread(updateChannel chan Spread, pair string) {
+func GetSpread(updateChannel chan data.Spread, pair string) {
 	defer close(updateChannel)
 	var init_resp map[string]interface{}
 	var err error
@@ -70,7 +71,7 @@ func GetSpread(updateChannel chan Spread, pair string) {
 				if err != nil {
 					log.Fatal("decimal.NewFromString error | ", err)
 				}
-				updateChannel <- Spread{WsReceived: wsReceived, BidVolume: bidVolume, Bid: bid, Ask: ask, AskVolume: askVolume}
+				updateChannel <- data.Spread{WsReceived: wsReceived, BidVolume: bidVolume, Bid: bid, Ask: ask, AskVolume: askVolume}
 			}
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/readysetliqd/crypto-live-spread-golang/backend/data"
 	"github.com/shopspring/decimal"
 )
 
@@ -21,7 +22,7 @@ var redial_attempts int = 0
 
 // Accepts a channel and a pair. Connects to websocket api to updated channel
 // with the live bid/ask spread for that pair
-func GetSpread(update_channel chan Spread, pair string) {
+func GetSpread(update_channel chan data.Spread, pair string) {
 	defer close(update_channel)
 	var init_resp map[string]interface{}
 	var err error
@@ -81,7 +82,7 @@ func GetSpread(update_channel chan Spread, pair string) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				update_channel <- Spread{WsReceived: wsReceived, Time: time, Bid: bid, Ask: ask, BidVolume: bid_volume, AskVolume: ask_volume}
+				update_channel <- data.Spread{WsReceived: wsReceived, Time: time, Bid: bid, Ask: ask, BidVolume: bid_volume, AskVolume: ask_volume}
 			}
 		}
 	}

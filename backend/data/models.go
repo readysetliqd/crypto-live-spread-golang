@@ -1,4 +1,4 @@
-package binancespot
+package data
 
 import (
 	"time"
@@ -8,9 +8,9 @@ import (
 
 type Spread struct {
 	WsReceived time.Time
-	Time       decimal.Decimal
-	BidVolume  decimal.Decimal
+	Time       decimal.Decimal // seconds since epoch
 	Bid        decimal.Decimal
 	Ask        decimal.Decimal
+	BidVolume  decimal.Decimal
 	AskVolume  decimal.Decimal
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/readysetliqd/crypto-live-spread-golang/backend/data"
 	binancecoinm "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-coinm-futures"
 	binancespot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-spot"
 	binanceusdm "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-usdm-futures"
@@ -45,9 +46,9 @@ func (a *App) Greet(name string) string {
 
 func (a *App) ConnectBinanceSpotWebsocket(pair string) {
 	var quit chan struct{} //nil
-	channelBinanceSpot := make(chan binancespot.Spread)
+	channelBinanceSpot := make(chan data.Spread)
 	go binancespot.GetSpread(channelBinanceSpot, pair)
-	var spreadData = binancespot.Spread{}
+	var spreadData = data.Spread{}
 	for {
 		select {
 		case spreadData = <-channelBinanceSpot:
@@ -60,9 +61,9 @@ func (a *App) ConnectBinanceSpotWebsocket(pair string) {
 
 func (a *App) ConnectBinanceUsdmWebsocket(pair string) {
 	var quit chan struct{} //nil
-	channelBinanceUsdm := make(chan binanceusdm.Spread)
+	channelBinanceUsdm := make(chan data.Spread)
 	go binanceusdm.GetSpread(channelBinanceUsdm, pair)
-	var spreadData = binanceusdm.Spread{}
+	var spreadData = data.Spread{}
 	for {
 		select {
 		case spreadData = <-channelBinanceUsdm:
@@ -75,9 +76,9 @@ func (a *App) ConnectBinanceUsdmWebsocket(pair string) {
 
 func (a *App) ConnectBinanceCoinmWebsocket(pair string) {
 	var quit chan struct{} //nil
-	channelBinanceCoinm := make(chan binancecoinm.Spread)
+	channelBinanceCoinm := make(chan data.Spread)
 	go binancecoinm.GetSpread(channelBinanceCoinm, pair)
-	var spreadData = binancecoinm.Spread{}
+	var spreadData = data.Spread{}
 	for {
 		select {
 		case spreadData = <-channelBinanceCoinm:
@@ -90,9 +91,9 @@ func (a *App) ConnectBinanceCoinmWebsocket(pair string) {
 
 func (a *App) ConnectKrakenSpotWebsocket(pair string) {
 	var quit chan struct{} //nil
-	channelKrakenSpot := make(chan krakenspot.Spread)
+	channelKrakenSpot := make(chan data.Spread)
 	go krakenspot.GetSpread(channelKrakenSpot, pair)
-	var spreadData = krakenspot.Spread{}
+	var spreadData = data.Spread{}
 	for {
 		select {
 		case spreadData = <-channelKrakenSpot:
