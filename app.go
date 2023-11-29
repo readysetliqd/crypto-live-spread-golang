@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"slices"
 
 	binancecoinm "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/binance-coinm-futures"
@@ -44,16 +43,60 @@ func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Selected market: %s", name)
 }
 
+func (a *App) ConnectBinanceSpotWebsocket(pair string) {
+	var quit chan struct{} //nil
+	channelBinanceSpot := make(chan binancespot.Spread)
+	go binancespot.GetSpread(channelBinanceSpot, pair)
+	var spreadData = binancespot.Spread{}
+	for {
+		select {
+		case spreadData = <-channelBinanceSpot:
+			runtime.EventsEmit(a.ctx, "spreadData", "Binance", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		case <-quit:
+			return
+		}
+	}
+}
+
+func (a *App) ConnectBinanceUsdmWebsocket(pair string) {
+	var quit chan struct{} //nil
+	channelBinanceUsdm := make(chan binanceusdm.Spread)
+	go binanceusdm.GetSpread(channelBinanceUsdm, pair)
+	var spreadData = binanceusdm.Spread{}
+	for {
+		select {
+		case spreadData = <-channelBinanceUsdm:
+			runtime.EventsEmit(a.ctx, "spreadData", "Binance (USD-M)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		case <-quit:
+			return
+		}
+	}
+}
+
+func (a *App) ConnectBinanceCoinmWebsocket(pair string) {
+	var quit chan struct{} //nil
+	channelBinanceCoinm := make(chan binancecoinm.Spread)
+	go binancecoinm.GetSpread(channelBinanceCoinm, pair)
+	var spreadData = binancecoinm.Spread{}
+	for {
+		select {
+		case spreadData = <-channelBinanceCoinm:
+			runtime.EventsEmit(a.ctx, "spreadData", "Binance (COIN-M)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		case <-quit:
+			return
+		}
+	}
+}
+
 func (a *App) ConnectKrakenSpotWebsocket(pair string) {
 	var quit chan struct{} //nil
 	channelKrakenSpot := make(chan krakenspot.Spread)
-	go krakenspot.KrakenSpread(channelKrakenSpot, pair)
+	go krakenspot.GetSpread(channelKrakenSpot, pair)
 	var spreadData = krakenspot.Spread{}
 	for {
 		select {
 		case spreadData = <-channelKrakenSpot:
-			log.Println(spreadData)
-			runtime.EventsEmit(a.ctx, "spreadData", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+			runtime.EventsEmit(a.ctx, "spreadData", "Kraken", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
 		case <-quit:
 			return
 		}

@@ -6,33 +6,42 @@
 
   let coin: string = ''
   let denom: string = ''
-  let denomDefault: string
-  let selectedAsset: string = ''
-  let krakenSpread: number[] = [1, 2, 3]
   let pairsPlaceholder: string[] = []
   
   onMount(() => {
-    EventsOn("spreadData", (bidVolume, bid, ask, askVolume) => {
-      krakenSpread = [bidVolume, bid, ask, askVolume];
+    EventsOn("spreadData", (exchange, bidVolume, bid, ask, askVolume) => {
+      exchanges[exchange].bidVolume = bidVolume
+      exchanges[exchange].bid = bid
+      exchanges[exchange].ask = ask
+      exchanges[exchange].askVolume = askVolume
     })
   })
 
-  $: if (denom == '') {
-    denomDefault = 'USD'
-  } else {
-    denomDefault = denom
+  $: {coin, denom, 
+    Object.keys(exchanges).forEach((exchange) => {
+      exchanges[exchange].recommended = getRecommendedPairs(exchange);
+    });
   }
 
   function getRecommendedPairs(exchange) {
     let coinInput: string
-    if (exchange == "Kraken" || exchange == "Kraken (Futures)" && coin == "BTC"){
+    let denomInput: string
+    if ((exchange == "Kraken" || exchange == "Kraken (Futures)") && (coin == "BTC" || coin == "")) {
       coinInput = "XBT"
+    } else if (coin == "") { 
+      coinInput = "BTC"
     } else {
       coinInput = coin
     }
-    return exchanges[exchange].pairs.filter(pair => pair.includes(coinInput) && pair.includes(denomDefault))
+    if ((exchange == "Kraken" || exchange == "Kraken (Futures)") && coin == "BTC") {
+      denomInput == "XBT"
+    } else if (denom == "") {
+      denomInput = "USD"
+    } else {
+      denomInput = denom
+    }
+    return exchanges[exchange].pairs.filter(pair => pair.includes(coinInput) && pair.includes(denomInput))
   }
-
 
   function fetchPairs(exchange) {
     console.log('fetchPairs called', exchange)
@@ -81,7 +90,54 @@
         break
     }
   }
-
+  function connectWebsocket(exchange, pair) {
+    console.log('connectWebsocket called', exchange)
+    switch (exchange) {
+      case 'Binance':
+        connectBinanceSpotWebsocket(pair)
+        break
+      case 'Binance (USD-M)':
+        connectBinanceUsdmWebsocket(pair)
+        break
+      case 'Binance (COIN-M)':
+        connectBinanceCoinmWebsocket(pair)
+        break
+      // case 'Binance US':
+      //   connectBinanceUsSpotWebsocket(pair)
+      //   break
+      // case 'Bitget':
+      //   connectBitgetSpotWebsocket(pair)
+      //   break
+      // case 'Bitget (Futures)':
+      //   connectBitgetFuturesWebsocket(pair)
+      //   break
+      // case 'Bybit':
+      //   connectBybitSpotWebsocket(pair)
+      //   break
+      // case 'Bybit (Futures)':
+      //   connectBybitFuturesWebsocket(pair)
+      //   break
+      // case 'Coinbase':
+      //   connectCoinbaseSpotWebsocket(pair)
+      //   break
+      case 'Kraken':
+        connectKrakenSpotWebsocket(pair)
+        break
+      // case 'Kraken (Futures)':
+      //   connectKrakenFuturesWebsocket(pair)
+      //   break
+      // case 'Okx':
+      //   connectOkxSpotWebsocket(pair)
+      //   break
+      // case 'Okx (Swaps)':
+      //   connectOkxSwapsWebsocket(pair)
+      //   break
+      // case 'Upbit':
+      //   connectUpbitSpotWebsocket(pair)
+      //   break
+    }
+  }
+  //#region fetchExchangePairs(exchange) functions
   async function fetchBinanceSpotPairs(exchange): Promise<void> {
     console.log('fetchBinanceSpotPairs called')
     const result = await go.FetchBinanceSpotPairs()
@@ -179,38 +235,52 @@
     console.log('FetchUpbitSpotPairs result', result)
     exchanges[exchange].pairs = result
   }
-
-  async function connectKrakenSpotWebsocket(asset): Promise<void> {
+  //#endregion
+  //#region connectExchangeWebsocket(pair) functions
+  async function connectKrakenSpotWebsocket(pair): Promise<void> {
     console.log('connectKrakenSpotWebsocket called');
-    const result = await go.ConnectKrakenSpotWebsocket(asset)
-    console.log('ConnectKrakenSpotWebsocket result', result)
+    const result = await go.ConnectKrakenSpotWebsocket(pair)
   }
 
+  async function connectBinanceSpotWebsocket(pair): Promise<void> {
+    console.log('connectBinanceSpotWebsocket called');
+    const result = await go.ConnectBinanceSpotWebsocket(pair)
+  }
 
+  async function connectBinanceUsdmWebsocket(pair): Promise<void> {
+    console.log('connectBinanceUsdmWebsocket called');
+    const result = await go.ConnectBinanceUsdmWebsocket(pair)
+  }
 
-  const selectAsset = (event) => {
-    selectedAsset = event.target.value;
-    connectKrakenSpotWebsocket(selectedAsset)
+  async function connectBinanceCoinmWebsocket(pair): Promise<void> {
+    console.log('connectBinanceCoinmWebsocket called');
+    const result = await go.ConnectBinanceCoinmWebsocket(pair)
+  }
+  //#endregion
+
+  const selectPair= (event) => {
+    const [selectedPair, exchange] = event.target.value.split(',')
+    connectWebsocket(exchange, selectedPair)
   }
 
   let exchanges = {
-    "Binance": {category: "Spot", name: "Binance", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Binance US": {category: "Spot", name: "Binance US", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Bitget": {category: "Spot", name: "Bitget", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Coinbase": {category: "Spot", name: "Coinbase", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Okx": {category: "Spot", name: "Okx", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Kraken": {category: "Spot", name: "Kraken", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Bybit": {category: "Spot", name: "Bybit", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Upbit": {category: "Spot", name: "Upbit", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Kraken (Futures)": {category: "Futures", name: "Kraken (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Binance (USD-M)": {category: "Futures", name: "Binance (USD-M)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Binance (COIN-M)": {category: "Futures", name: "Binance (COIN-M)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Bybit (Futures)": {category: "Futures", name: "Bybit (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Okx (Swaps)": {category: "Futures", name: "Okx (Swaps)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "Bitget (Futures)": {category: "Futures", name: "Bitget (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "HyperliquidX": {category: "DEX", name: "HyperliquidX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "DYDX": {category: "DEX", name: "DYDX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
-    "GMX": {category: "DEX", name: "GMX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder},
+    "Binance": {category: "Spot", name: "Binance", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Binance US": {category: "Spot", name: "Binance US", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Bitget": {category: "Spot", name: "Bitget", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Coinbase": {category: "Spot", name: "Coinbase", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Okx": {category: "Spot", name: "Okx", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Kraken": {category: "Spot", name: "Kraken", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Bybit": {category: "Spot", name: "Bybit", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Upbit": {category: "Spot", name: "Upbit", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Kraken (Futures)": {category: "Futures", name: "Kraken (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Binance (USD-M)": {category: "Futures", name: "Binance (USD-M)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Binance (COIN-M)": {category: "Futures", name: "Binance (COIN-M)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Bybit (Futures)": {category: "Futures", name: "Bybit (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Okx (Swaps)": {category: "Futures", name: "Okx (Swaps)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "Bitget (Futures)": {category: "Futures", name: "Bitget (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "DYDX": {category: "DEX", name: "DYDX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "GMX": {category: "DEX", name: "GMX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
+    "HyperliquidX": {category: "DEX", name: "HyperliquidX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
   }
   let exchangeNames = Object.keys(exchanges)
 
@@ -220,13 +290,6 @@
     fetchPairs(exchange.name)
     exchange.checked = !exchange.checked;
   }
-
-  $: {coin, denomDefault, 
-  Object.keys(exchanges).forEach((exchange) => {
-    exchanges[exchange].recommended = getRecommendedPairs(exchange);
-  });
-}
-
 </script>
 
 <main>
@@ -246,7 +309,7 @@
         {#if i === 0 || exchanges[exchangeNames[i]].category !== exchanges[exchangeNames[i-1]].category}
         <li class="category">{exchanges[exchangeName].category}</li>
         {/if}
-        <li class="item" on:click={() => toggleExchange(exchanges[exchangeName])}>
+        <li class="item" on:click={() => toggleExchange(exchanges[exchangeName])} on:keypress={() => toggleExchange(exchanges[exchangeName])}>
           <input
             class="tickbox"
             type="checkbox"
@@ -268,17 +331,17 @@
           <th class="th">Ask Price</th>
           <th class="th">Ask Price</th>
           <th class="th">Ask Volume</th>
-
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td class="td">
-            <select class="dropdown">
+          <td class="td1">
+            <select on:change={selectPair} class="dropdown">
+              <option selected disabled>Select pair...</option>
               <optgroup label="Recommended">
                 {#if exchanges[exchange].recommended.length != 0}
                 {#each exchanges[exchange].recommended as pair}
-                <option value="{pair}">{pair}</option>
+                <option value="{pair},{exchange}">{pair}</option>
                 {/each}
                 {:else}
                 <option value="None" disabled>None</option>
@@ -286,16 +349,15 @@
               </optgroup>
               <optgroup label="All Pairs">
                 {#each exchanges[exchange].pairs as pair}
-                <option value="{pair}">{pair}</option>
+                <option value="{pair},{exchange}">{pair}</option>
                 {/each}
               </optgroup>
               </select>
           </td>
-          <td class="td">0</td>
-          <td class="td">0</td>
-          <td class="td">0</td>
-          <td class="td">0</td>
-
+          <td class="td2">{exchanges[exchange].bidVolume}</td>
+          <td class="td2">{exchanges[exchange].bid}</td>
+          <td class="td2">{exchanges[exchange].ask}</td>
+          <td class="td2">{exchanges[exchange].askVolume}</td>
         </tr>
       </tbody>
     </table>
@@ -364,7 +426,6 @@
     margin: 0;
     padding: 0;
   }
-  /* Define the styles for the category headings */
   .category {
     font-weight: bold;
     margin: 0.5rem 0;
@@ -380,23 +441,29 @@
     width: 200px;
     cursor: pointer;
   }
-  /* Define the styles for the tickboxes */
   .tickbox {
     margin-right: 0.5rem;
   }
-    /* Define the styles for the table headings */
+  .table {
+    table-layout: fixed;
+    width: 100%;
+  }
   .th {
     color: white;
     font-weight: bold;
     padding: 0.5rem;
     border-bottom: 1px solid #d0d0d0;
   }
-  /* Define the styles for the table cells */
-  .td {
+  .td1 {
     color: white;
     padding: 0.5rem;
     border-bottom: 1px solid #d0d0d0;
+    overflow: hidden;
   }
-
-
+  .td2 {
+    color: white;
+    padding: 0.5rem;
+    border-bottom: 1px solid #d0d0d0;
+    overflow: hidden;
+  }
 </style>

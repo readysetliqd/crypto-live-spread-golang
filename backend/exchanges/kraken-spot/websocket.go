@@ -19,7 +19,9 @@ var heartbeat = []byte{123, 34, 101, 118, 101, 110, 116, 34, 58, 34, 104, 101, 9
 var reconnect_attempts int = 0
 var redial_attempts int = 0
 
-func KrakenSpread(update_channel chan Spread, pair string) {
+// Accepts a channel and a pair. Connects to websocket api to updated channel
+// with the live bid/ask spread for that pair
+func GetSpread(update_channel chan Spread, pair string) {
 	defer close(update_channel)
 	var init_resp map[string]interface{}
 	var err error
@@ -50,7 +52,7 @@ func KrakenSpread(update_channel chan Spread, pair string) {
 			if err != nil {
 				log.Fatal(err)
 			} else {
-				ws_received := time.Now()
+				wsReceived := time.Now()
 				var time decimal.Decimal
 				var bid decimal.Decimal
 				var ask decimal.Decimal
@@ -79,7 +81,7 @@ func KrakenSpread(update_channel chan Spread, pair string) {
 				if err != nil {
 					log.Fatal(err)
 				}
-				update_channel <- Spread{Ws_received: ws_received, Time: time, Bid: bid, Ask: ask, BidVolume: bid_volume, AskVolume: ask_volume}
+				update_channel <- Spread{WsReceived: wsReceived, Time: time, Bid: bid, Ask: ask, BidVolume: bid_volume, AskVolume: ask_volume}
 			}
 		}
 	}
