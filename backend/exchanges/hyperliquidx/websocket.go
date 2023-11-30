@@ -40,12 +40,12 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 	for {
 		_, msg, err = c.ReadMessage()
 		if err != nil {
-			log.Fatal("Bitget c.ReadMessage() err | ", err)
+			log.Fatal("HyperliquidX c.ReadMessage() err | ", err)
 			// TO DO: change from log.Fatal and implement reconnect
 			// c, err = attemptReconnect(initResp)
 			// subscribeChannel(c, initResp, payload)
 			// if err != nil {
-			// 	log.Fatal("Bitget c.ReadMessage() err | ", err)
+			// 	log.Fatal("HyperliquidX c.ReadMessage() err | ", err)
 			// }
 		} else if !bytes.Equal(pong, msg) { //not a pong message
 			err := json.Unmarshal(msg, &resp)

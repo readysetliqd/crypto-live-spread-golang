@@ -38,6 +38,10 @@ export function ConnectCoinbaseSpotWebsocket(arg1) {
   return window['go']['main']['App']['ConnectCoinbaseSpotWebsocket'](arg1);
 }
 
+export function ConnectDydxWebsocket(arg1) {
+  return window['go']['main']['App']['ConnectDydxWebsocket'](arg1);
+}
+
 export function ConnectHyperliquidxWebsocket(arg1) {
   return window['go']['main']['App']['ConnectHyperliquidxWebsocket'](arg1);
 }
@@ -96,6 +100,10 @@ export function FetchBybitSpotPairs() {
 
 export function FetchCoinbaseSpotPairs() {
   return window['go']['main']['App']['FetchCoinbaseSpotPairs']();
+}
+
+export function FetchDydxPairs() {
+  return window['go']['main']['App']['FetchDydxPairs']();
 }
 
 export function FetchHyperliquidxPairs() {

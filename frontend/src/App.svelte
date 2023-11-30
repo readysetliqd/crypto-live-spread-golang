@@ -74,6 +74,9 @@
       case 'Coinbase':
         fetchCoinbaseSpotPairs(exchange)
         break
+      case 'DYDX':
+        fetchDydxPairs(exchange)
+        break
       case 'HyperliquidX':
         fetchHyperliquidxPairs(exchange)
         break
@@ -123,6 +126,9 @@
         break
       case 'Coinbase':
         connectCoinbaseSpotWebsocket(pair)
+        break
+      case 'DYDX':
+        connectDydxWebsocket(pair)
         break
       case 'HyperliquidX':
         connectHyperliquidxWebsocket(pair)
@@ -181,6 +187,10 @@
     const result = await go.FetchCoinbaseSpotPairs()
     exchanges[exchange].pairs = result
   }
+  async function fetchDydxPairs(exchange): Promise<void> {
+    const result = await go.FetchDydxPairs()
+    exchanges[exchange].pairs = result
+  }
   async function fetchHyperliquidxPairs(exchange): Promise<void> {
     const result = await go.FetchHyperliquidxPairs()
     exchanges[exchange].pairs = result
@@ -236,6 +246,9 @@
   }
   async function connectCoinbaseSpotWebsocket(pair): Promise<void> {
     const result = await go.ConnectCoinbaseSpotWebsocket(pair)
+  }
+  async function connectDydxWebsocket(pair):Promise<void> {
+    const result = await go.ConnectDydxWebsocket(pair)
   }
   async function connectHyperliquidxWebsocket(pair): Promise<void> {
     const result = await go.ConnectHyperliquidxWebsocket(pair)

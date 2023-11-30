@@ -15,6 +15,7 @@ import (
 	bybitfutures "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/bybit-futures"
 	bybitspot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/bybit-spot"
 	coinbasespot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/coinbase-spot"
+	"github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/dydx"
 	"github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/hyperliquidx"
 	krakenfutures "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/kraken-futures"
 	krakenspot "github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/kraken-spot"
@@ -153,6 +154,18 @@ func (a *App) ConnectCoinbaseSpotWebsocket(pair string) {
 	}
 }
 
+func (a *App) ConnectDydxWebsocket(pair string) {
+	channelDydx := make(chan data.Spread)
+	go dydx.GetSpread(channelDydx, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelDydx:
+			runtime.EventsEmit(a.ctx, "spreadData", "DYDX", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
 func (a *App) ConnectHyperliquidxWebsocket(pair string) {
 	channelHyperliquidx := make(chan data.Spread)
 	go hyperliquidx.GetSpread(channelHyperliquidx, pair)
@@ -275,6 +288,12 @@ func (a *App) FetchBybitFuturesPairs() []string {
 
 func (a *App) FetchCoinbaseSpotPairs() []string {
 	s := coinbasespot.FetchPairs()
+	slices.Sort(s)
+	return s
+}
+
+func (a *App) FetchDydxPairs() []string {
+	s := dydx.FetchPairs()
 	slices.Sort(s)
 	return s
 }

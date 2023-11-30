@@ -3,9 +3,22 @@ package main
 import (
 	"log"
 
-	"github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/hyperliquidx"
+	"github.com/readysetliqd/crypto-live-spread-golang/backend/data"
+	"github.com/readysetliqd/crypto-live-spread-golang/backend/exchanges/dydx"
 )
 
+func ConnectDydxWebsocket(pair string) {
+	channelDydx := make(chan data.Spread)
+	go dydx.GetSpread(channelDydx, pair)
+	var spreadData = data.Spread{}
+	for {
+		select {
+		case spreadData = <-channelDydx:
+			log.Println(spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		}
+	}
+}
+
 func main() {
-	log.Println(hyperliquidx.FetchPairs())
+	ConnectDydxWebsocket("SUSHI-USD")
 }
