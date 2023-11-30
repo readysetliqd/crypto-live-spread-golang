@@ -137,6 +137,8 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 				if len(newBids) > 0 {
 					for _, newBid := range newBids {
 						for i, bid := range book.Bids {
+							//not sure why i needed to add the !size.equal to zero here but best bid/ask
+							//were updating with zero volume levels, may mean this logic is broken
 							if newBid.Price.GreaterThan(bid.Price) && !newBid.Size.Equal(decimal.Zero) {
 								book.Bids = append([]Bid{newBid}, book.Bids...)
 								break
@@ -155,6 +157,8 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 				if len(newAsks) > 0 {
 					for _, newAsk := range newAsks {
 						for i, ask := range book.Asks {
+							//not sure why i needed to add the !size.equal to zero here but best bid/ask
+							//were updating with zero volume levels, may mean this logic is broken
 							if newAsk.Price.LessThan(ask.Price) && !newAsk.Size.Equal(decimal.Zero) {
 								book.Asks = append([]Ask{newAsk}, book.Asks...)
 								break
