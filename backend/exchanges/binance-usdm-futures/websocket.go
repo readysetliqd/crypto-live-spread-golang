@@ -13,8 +13,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-var pingFrame = []byte{0} // TO DO: figure out what a pingframe is
-
 // Accepts a channel and a pair. Connects to websocket api to updated channel
 // with the live bid/ask spread for that pair
 func GetSpread(updateChannel chan data.Spread, pair string) {
@@ -40,7 +38,7 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 			// if err != nil {
 			//	log.Fatal("Binance c.ReadMessage() err | ", err)
 			//}
-		} else if !bytes.Equal(pingFrame, msg) { //not a ping frame message
+		} else if !bytes.Equal(nil, msg) {
 			err := json.Unmarshal(msg, &resp)
 			if err != nil {
 				log.Fatal("json.Unmarshal error | ", err)
@@ -85,7 +83,6 @@ func dialBinance(init_resp map[string]interface{}, pair string) (*websocket.Conn
 		// implement redial attempts
 		// c = attemptRedialBinance()
 	}
-
 	err = c.ReadJSON(&init_resp)
 	if err != nil {
 		log.Fatal("ReadJSON() error | ", err)
