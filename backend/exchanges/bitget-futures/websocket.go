@@ -12,8 +12,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-var pong = []byte{0} // TO DO: figure out what pong frames are
-
 // Accepts a channel and a pair. Connects to websocket api to updated channel
 // with the live bid/ask spread for that pair
 func GetSpread(updateChannel chan data.Spread, pair string) {
@@ -34,52 +32,62 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 	log.Println(payload)
 	subscribeChannel(c, initResp, payload)
 
+	// Create a ticker that fires every 30 seconds
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
 	resp := map[string]interface{}{}
-	var msg = []byte{}
 	// listen for the incremental updates
 	for {
-		_, msg, err = c.ReadMessage()
-		if err != nil {
-			log.Fatal("Bitget c.ReadMessage() err | ", err)
-			// TO DO: change from log.Fatal and implement reconnect
-			// c, err = attemptReconnect(initResp)
-			// subscribeChannel(c, initResp, payload)
-			// if err != nil {
-			// 	log.Fatal("Bitget c.ReadMessage() err | ", err)
-			// }
-		} else if !bytes.Equal(pong, msg) { //not a pong message
-			err := json.Unmarshal(msg, &resp)
+		select {
+		case <-ticker.C:
+			sendPing(c)
+		default:
+			_, msg, err := c.ReadMessage()
+			msgString := string(msg[:])
 			if err != nil {
-				log.Fatal(err)
-			} else {
-				wsReceived := time.Now()
-				var bid decimal.Decimal
-				var ask decimal.Decimal
-				var bidVolume decimal.Decimal
-				var askVolume decimal.Decimal
-				var err error
-				respInfc := resp["data"].([]interface{})[0]
+				log.Fatal("Bitget c.ReadMessage() err | ", err)
+				// TO DO: implement reconnect
+				// c, err = attemptReconnect(initResp)
+			} else if !bytes.Equal(nil, msg) && msgString != "pong" { //not a pong message
+				err := json.Unmarshal(msg, &resp)
+				if err != nil {
+					log.Fatal(err)
+				} else {
+					wsReceived := time.Now()
+					var bid decimal.Decimal
+					var ask decimal.Decimal
+					var bidVolume decimal.Decimal
+					var askVolume decimal.Decimal
+					var err error
+					respInfc := resp["data"].([]interface{})[0]
 
-				bid, err = decimal.NewFromString(respInfc.(map[string]interface{})["bestBid"].(string))
-				if err != nil {
-					log.Fatal(err)
+					bid, err = decimal.NewFromString(respInfc.(map[string]interface{})["bestBid"].(string))
+					if err != nil {
+						log.Fatal(err)
+					}
+					ask, err = decimal.NewFromString(respInfc.(map[string]interface{})["bestAsk"].(string))
+					if err != nil {
+						log.Fatal(err)
+					}
+					bidVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidSz"].(string))
+					if err != nil {
+						log.Fatal(err)
+					}
+					askVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["askSz"].(string))
+					if err != nil {
+						log.Fatal(err)
+					}
+					updateChannel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bidVolume, AskVolume: askVolume}
 				}
-				ask, err = decimal.NewFromString(respInfc.(map[string]interface{})["bestAsk"].(string))
-				if err != nil {
-					log.Fatal(err)
-				}
-				bidVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidSz"].(string))
-				if err != nil {
-					log.Fatal(err)
-				}
-				askVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["askSz"].(string))
-				if err != nil {
-					log.Fatal(err)
-				}
-				updateChannel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bidVolume, AskVolume: askVolume}
 			}
 		}
 	}
+}
+
+func sendPing(c *websocket.Conn) {
+	payload := `ping`
+	c.WriteMessage(1, []byte(payload))
 }
 
 func dial(initResp map[string]interface{}) (*websocket.Conn, error) {
