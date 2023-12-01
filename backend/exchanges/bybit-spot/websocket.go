@@ -29,7 +29,10 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 	log.Println(payload)
 	subscribeChannel(c, initResp, payload)
 
-	resp := map[string]interface{}{}
+	// Create a ticker that fires every 20 seconds
+	timeTicker := time.NewTicker(20 * time.Second)
+	defer timeTicker.Stop()
+
 	var msg = []byte{}
 	// listen for the incremental updates
 	var prevBid decimal.Decimal
@@ -37,20 +40,26 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 	var prevBidVolume decimal.Decimal
 	var prevAskVolume decimal.Decimal
 	for {
-		_, msg, err = c.ReadMessage()
-		if err != nil {
-			log.Fatal("Bybit c.ReadMessage() err | ", err)
-			// TO DO: change from log.Fatal and implement reconnect
-			// c, err = attemptReconnect(initResp)
-			// subscribeChannel(c, initResp, payload)
-			// if err != nil {
-			// 	log.Fatal("Bybit c.ReadMessage() err | ", err)
-			// }
-		} else if !bytes.Equal(pong, msg) { //not a pong message
+		select {
+		case <-timeTicker.C:
+			sendPing(c)
+		default:
+			resp := map[string]interface{}{}
+			_, msg, err = c.ReadMessage()
+			if err != nil {
+				log.Fatal("Bybit c.ReadMessage() err | ", err)
+				// TO DO: implement reconnect
+				// c, err = attemptReconnect(initResp)
+			}
 			err := json.Unmarshal(msg, &resp)
 			if err != nil {
 				log.Fatal(err)
-			} else {
+			}
+			if resp["op"] != nil {
+				if resp["op"].(string) == "ping" { // pong message
+					continue
+				}
+			} else if !bytes.Equal(msg, nil) {
 				wsReceived := time.Now()
 				var bid decimal.Decimal
 				var ask decimal.Decimal
@@ -79,7 +88,6 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 					prevBid = bid
 					prevAsk = ask
 					prevAskVolume = askVolume
-
 					updateChannel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bidVolume, AskVolume: askVolume}
 				} else if resp["type"].(string) == "delta" {
 					if len(respInfc["a"].([]interface{})) > 0 {
@@ -121,10 +129,16 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 						bidVolume = prevBidVolume
 					}
 					updateChannel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bidVolume, AskVolume: askVolume}
+
 				}
 			}
 		}
 	}
+}
+
+func sendPing(c *websocket.Conn) {
+	payload := `{"op": "ping"}`
+	c.WriteMessage(1, []byte(payload))
 }
 
 func dial(initResp map[string]interface{}) (*websocket.Conn, error) {
@@ -142,13 +156,10 @@ func subscribeChannel(c *websocket.Conn, initResp map[string]interface{}, payloa
 	var err error
 	c.WriteMessage(1, []byte(payload))
 	err = c.ReadJSON(&initResp)
-	// TO DO:
-	// add check that all pairs are subscribed
 	if err != nil {
 		log.Fatal(err)
+	} else if !initResp["success"].(bool) {
+		// not sure why bybit spot has an initial connection response but bybit futures doesn't
+		log.Fatal("event error", initResp)
 	}
-	// not sure why bybit spot has an initial connection response but bybit futures doesn't
-	// } else if !initResp["success"].(bool) {
-	// 	log.Fatal("event error", initResp)
-	// }
 }
