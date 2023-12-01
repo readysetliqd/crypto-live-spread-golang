@@ -288,7 +288,6 @@
     "Okx (Swaps)": {category: "Futures", name: "Okx (Swaps)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
     "Bitget (Futures)": {category: "Futures", name: "Bitget (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
     "DYDX": {category: "DEX", name: "DYDX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "GMX": {category: "DEX", name: "GMX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
     "HyperliquidX": {category: "DEX", name: "HyperliquidX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
   }
   let exchangeNames = Object.keys(exchanges)
