@@ -11,7 +11,11 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-var heartbeat = []byte{0} // TO DO: figure out what heartbeat frames are
+//TO DO:
+// Implement sendPing(). Kraken Future docs mention required sendPing at least
+// every 60 seconds. In their sample implementation they do it every 30.
+// This may be covered by gorilla/websocket package as running the program
+// doesn't seem to need it, but a redundant implementation couldn't hurt.
 
 // Accepts a channel and a pair. Connects to websocket api to updated channel
 // with the live bid/ask spread for that pair
@@ -42,7 +46,7 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 			// if err != nil {
 			// 	log.Fatal("Kraken c.ReadMessage() err | ", err)
 			// }
-		} else if !bytes.Equal(heartbeat, msg) { //not a heartbeat message
+		} else if !bytes.Equal(nil, msg) {
 			err := json.Unmarshal(msg, &resp)
 			if err != nil {
 				log.Fatal(err)
