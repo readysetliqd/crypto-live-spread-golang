@@ -3,12 +3,51 @@
   import { onMount } from 'svelte'
   import { Svroller } from "svrollbar"
   import * as go from '../wailsjs/go/main/App.js'
-    import { group_outros } from 'svelte/internal';
 
-  let coin: string = ''
-  let denom: string = ''
-  let pairsPlaceholder: string[] = []
-  
+  class Exchange {
+    category: Category
+    name: string
+    checked: boolean = false
+    pairs: string[] = []
+    recommended: string[] = []
+    askVolume: number = null
+    ask: number = Number.MAX_VALUE
+    bid: number = null
+    bidVolume: number = null
+
+    constructor(name: string, category: Category) {
+      this.name = name
+      this.category = category
+    }
+  }
+
+  type Category = "Spot" | "Futures" | "Hybrid DEX"
+
+  const exchangeMap = new Map<string, Category>([
+    ["Binance", "Spot"],
+    ["Binance US", "Spot"],
+    ["Bitget", "Spot"],
+    ["Coinbase", "Spot"],
+    ["Okx", "Spot"],
+    ["Kraken", "Spot"],
+    ["Bybit", "Spot"],
+    ["Upbit", "Spot"],
+    ["Kraken (Futures)", "Futures"],
+    ["Binance (USD-M)", "Futures"],
+    ["Binance (COIN-M)", "Futures"],
+    ["Bybit (Futures)", "Futures"],
+    ["Okx (Swaps)", "Futures"],
+    ["Bitget (Futures)", "Futures"],
+    ["DYDX", "Hybrid DEX"],
+    ["HyperliquidX", "Hybrid DEX"],
+  ])
+
+  let exchanges: { [key: string]: Exchange } = {}
+  exchangeMap.forEach((category: Category, name: string) => {
+    let newExchange = new Exchange(name, category)
+    exchanges[name] = newExchange
+  })
+
   onMount(() => {
     EventsOn("spreadData", (exchange, bidVolume, bid, ask, askVolume) => {
       exchanges[exchange].bidVolume = bidVolume
@@ -16,12 +55,43 @@
       exchanges[exchange].ask = ask
       exchanges[exchange].askVolume = askVolume
     })
+
+    console.log("exchangeMap | ", exchangeMap)
+    console.log("exchanges2[\"Binance\"]| ", exchanges["Binance"])
   })
+
+  let coin: string = ''
+  let denom: string = ''
+  let highestBid: number = null
+  let lowestAsk: number = null
+  let widestSpread: number = null
+  let exchangeNames = Object.keys(exchanges)
+
+  $: { exchanges,
+    highestBid = 0
+    lowestAsk = Number.MAX_VALUE
+    widestSpread = 0
+    Object.keys(exchanges).forEach((exchange) => {
+      let spread = 0
+      if (exchanges[exchange].bid != null) {
+        spread = (exchanges[exchange].ask / exchanges[exchange].bid * 100 - 100)
+      }
+      if (spread > widestSpread) {
+        widestSpread = spread
+      }
+      if (exchanges[exchange].bid > highestBid) {
+        highestBid = exchanges[exchange].bid
+      } 
+      if (exchanges[exchange].ask < lowestAsk) {
+        lowestAsk = exchanges[exchange].ask
+      }
+    })
+  }
 
   $: {coin, denom, 
     Object.keys(exchanges).forEach((exchange) => {
-      exchanges[exchange].recommended = getRecommendedPairs(exchange);
-    });
+      exchanges[exchange].recommended = getRecommendedPairs(exchange)
+    })
   }
 
   function getRecommendedPairs(exchange) {
@@ -41,7 +111,11 @@
     } else {
       denomInput = denom
     }
-    return exchanges[exchange].pairs.filter(pair => pair.includes(coinInput) && pair.includes(denomInput))
+    if (exchange == "HyperliquidX") {
+      return exchanges[exchange].pairs.filter(pair => pair.includes(coinInput))
+    } else {
+      return exchanges[exchange].pairs.filter(pair => pair.includes(coinInput) && pair.includes(denomInput))
+    }
   }
 
   function fetchPairs(exchange) {
@@ -272,26 +346,6 @@
     connectWebsocket(exchange, selectedPair)
   }
 
-  let exchanges = {
-    "Binance": {category: "Spot", name: "Binance", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Binance US": {category: "Spot", name: "Binance US", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Bitget": {category: "Spot", name: "Bitget", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Coinbase": {category: "Spot", name: "Coinbase", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Okx": {category: "Spot", name: "Okx", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Kraken": {category: "Spot", name: "Kraken", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Bybit": {category: "Spot", name: "Bybit", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Upbit": {category: "Spot", name: "Upbit", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Kraken (Futures)": {category: "Futures", name: "Kraken (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Binance (USD-M)": {category: "Futures", name: "Binance (USD-M)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Binance (COIN-M)": {category: "Futures", name: "Binance (COIN-M)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Bybit (Futures)": {category: "Futures", name: "Bybit (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Okx (Swaps)": {category: "Futures", name: "Okx (Swaps)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "Bitget (Futures)": {category: "Futures", name: "Bitget (Futures)", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "DYDX": {category: "DEX", name: "DYDX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-    "HyperliquidX": {category: "DEX", name: "HyperliquidX", checked: false, pairs: pairsPlaceholder, recommended: pairsPlaceholder, bidVolume: 0, bid: 0, ask: 0, askVolume: 0},
-  }
-  let exchangeNames = Object.keys(exchanges)
-
   // Define a function to toggle the checked status of an exchange
   function toggleExchange(exchange) {
     console.log("exchange checked", exchanges)
@@ -310,6 +364,25 @@
   <div class="input-box" id="input">
     <input autocomplete="off" bind:value={denom} class="input" id="denom" type="text" placeholder="USD"/>
   </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Highest Bid</th>
+        <th>Lowest Ask</th>
+        <th>Widest Spread</th>
+      </tr>
+      <tr>
+        <td>Value</td>
+        <td>{highestBid}</td>
+        <td>{lowestAsk}</td>
+        <td>{widestSpread.toFixed(3)}%</td>
+      </tr>
+      <tr>
+        <td>Exchange</td>
+      </tr>
+    </thead>
+  </table>
   <div class="column">
     <Svroller height="100%" width=12rem>
       <ul class="list">
@@ -372,17 +445,6 @@
     {/if}
     {/each}
   </div>
-  
-<!--
-  <div>
-    <select bind:value={selectedAsset} on:change={selectAsset}>
-      {#each krakenSpotPairs as pair}
-              <option value="{pair}">{pair}</option>
-      {/each}
-    </select>
-  </div>
-  <div class="selected-asset" id="selected-asset">{selectedAsset}</div>
-  <div class="kraken-spread" id="kraken-spread">{krakenSpread}</div>-->
 </main>
 
 <style>
