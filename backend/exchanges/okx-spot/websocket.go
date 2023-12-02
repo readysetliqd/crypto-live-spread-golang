@@ -40,13 +40,13 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 	log.Println(payload)
 	subscribeChannel(c, initResp, payload)
 
-	// Create a ticker that fires every 29 seconds
+	// Create a ticker that fires every const timerDelay seconds
 	timeTicker := time.NewTicker(timerDelay)
 	defer timeTicker.Stop()
 
 	resp := map[string]interface{}{}
 	var msg = []byte{}
-	// listen for the incremental updates
+	// listen for incremental updates and timeTicker countdown
 	for {
 		select {
 		case <-timeTicker.C:
