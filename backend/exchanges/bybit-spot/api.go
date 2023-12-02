@@ -14,6 +14,10 @@ func FetchPairs() []string {
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode == http.StatusForbidden {
+		return []string{"Error accessing endpoint, check if your IP is geoblocked"}
+	}
+
 	resp := map[string]interface{}{}
 	var msg = []byte{}
 	msg, err = io.ReadAll(res.Body)
