@@ -11,7 +11,18 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-var pong = []byte{0} // TO DO: figure out what pong frames are
+// From the docs at https://www.okx.com/docs-v5/en/#overview-websocket-connect:
+// To keep the connection stable:
+//
+// 1. Set a timer of N seconds whenever a response message is received, where N
+// is less than 30.
+//
+// 2. If the timer is triggered, which means that no new message is received
+// within N seconds, send the String 'ping'.
+//
+// 3. Expect a 'pong' as a response. If the response message is not received
+// within N seconds, please raise an error or reconnect.
+const timerDelay = 29 * time.Second
 
 // Accepts a channel and a pair. Connects to websocket api to updated channel
 // with the live bid/ask spread for that pair
@@ -29,52 +40,64 @@ func GetSpread(updateChannel chan data.Spread, pair string) {
 	log.Println(payload)
 	subscribeChannel(c, initResp, payload)
 
+	// Create a ticker that fires every 29 seconds
+	timeTicker := time.NewTicker(timerDelay)
+	defer timeTicker.Stop()
+
 	resp := map[string]interface{}{}
 	var msg = []byte{}
 	// listen for the incremental updates
 	for {
-		_, msg, err = c.ReadMessage()
-		if err != nil {
-			log.Fatal("Okx c.ReadMessage() err | ", err)
-			// TO DO: change from log.Fatal and implement reconnect
-			// c, err = attemptReconnect(initResp)
-			// subscribeChannel(c, initResp, payload)
-			// if err != nil {
-			// 	log.Fatal("Okx c.ReadMessage() err | ", err)
-			// }
-		} else if !bytes.Equal(pong, msg) { //not a pong message
-			err := json.Unmarshal(msg, &resp)
+		select {
+		case <-timeTicker.C:
+			sendPing(c)
+		default:
+			timeTicker.Reset(timerDelay)
+			_, msg, err = c.ReadMessage()
+			msgString := string(msg[:])
 			if err != nil {
-				log.Fatal(err)
-			} else {
-				wsReceived := time.Now()
-				var bid decimal.Decimal
-				var ask decimal.Decimal
-				var bidVolume decimal.Decimal
-				var askVolume decimal.Decimal
-				var err error
-				respInfc := resp["data"].([]interface{})[0]
+				log.Fatal("Okx c.ReadMessage() err | ", err)
+				// TO DO: implement reconnect
+				// c, err = attemptReconnect(initResp)
+			} else if !bytes.Equal(nil, msg) && msgString != "pong" {
+				err := json.Unmarshal(msg, &resp)
+				if err != nil {
+					log.Fatal(err)
+				} else {
+					wsReceived := time.Now()
+					var bid decimal.Decimal
+					var ask decimal.Decimal
+					var bidVolume decimal.Decimal
+					var askVolume decimal.Decimal
+					var err error
+					respInfc := resp["data"].([]interface{})[0]
 
-				bid, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidPx"].(string))
-				if err != nil {
-					log.Fatal(err)
+					bid, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidPx"].(string))
+					if err != nil {
+						log.Fatal(err)
+					}
+					ask, err = decimal.NewFromString(respInfc.(map[string]interface{})["askPx"].(string))
+					if err != nil {
+						log.Fatal(err)
+					}
+					bidVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidSz"].(string))
+					if err != nil {
+						log.Fatal(err)
+					}
+					askVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["askSz"].(string))
+					if err != nil {
+						log.Fatal(err)
+					}
+					updateChannel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bidVolume, AskVolume: askVolume}
 				}
-				ask, err = decimal.NewFromString(respInfc.(map[string]interface{})["askPx"].(string))
-				if err != nil {
-					log.Fatal(err)
-				}
-				bidVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["bidSz"].(string))
-				if err != nil {
-					log.Fatal(err)
-				}
-				askVolume, err = decimal.NewFromString(respInfc.(map[string]interface{})["askSz"].(string))
-				if err != nil {
-					log.Fatal(err)
-				}
-				updateChannel <- data.Spread{WsReceived: wsReceived, Bid: bid, Ask: ask, BidVolume: bidVolume, AskVolume: askVolume}
 			}
 		}
 	}
+}
+
+func sendPing(c *websocket.Conn) {
+	payload := `ping`
+	c.WriteMessage(1, []byte(payload))
 }
 
 func dial(initResp map[string]interface{}) (*websocket.Conn, error) {
@@ -92,8 +115,6 @@ func subscribeChannel(c *websocket.Conn, initResp map[string]interface{}, payloa
 	var err error
 	c.WriteMessage(1, []byte(payload))
 	err = c.ReadJSON(&initResp)
-	// TO DO:
-	// add check that all pairs are subscribed
 	if err != nil {
 		log.Fatal(err)
 	} else if initResp["event"] == "error" {
