@@ -21,6 +21,11 @@
     }
   }
 
+  class Stat {
+    value: number = null
+    exchange: string = null    
+  }
+
   type Category = "Spot" | "Futures" | "Hybrid DEX"
 
   const exchangeMap = new Map<string, Category>([
@@ -59,30 +64,38 @@
 
   let coin: string = ''
   let denom: string = ''
-  let highestBid: number = null
-  let lowestAsk: number = null
-  let widestSpread: number = null
+  let highestBid = new Stat()
+  let lowestAsk = new Stat()
+  let widestSpread = new Stat()
+  let highLowDiff = new Stat()
   let exchangeNames = Object.keys(exchanges)
 
   $: { exchanges,
-    highestBid = 0
-    lowestAsk = Number.MAX_VALUE
-    widestSpread = 0
+    highestBid.value = 0
+    lowestAsk.value = Number.MAX_VALUE
+    widestSpread.value = 0
     Object.keys(exchanges).forEach((exchange) => {
       let spread = 0
       if (exchanges[exchange].bid != null) {
         spread = (exchanges[exchange].ask / exchanges[exchange].bid * 100 - 100)
       }
-      if (spread > widestSpread) {
-        widestSpread = spread
+      if (spread > widestSpread.value) {
+        widestSpread.value = spread
+        widestSpread.exchange = exchange
       }
-      if (exchanges[exchange].bid > highestBid) {
-        highestBid = exchanges[exchange].bid
+      if (exchanges[exchange].bid > highestBid.value) {
+        highestBid.value = exchanges[exchange].bid
+        highestBid.exchange = exchange
       } 
-      if (exchanges[exchange].ask < lowestAsk) {
-        lowestAsk = exchanges[exchange].ask
+      if (exchanges[exchange].ask < lowestAsk.value) {
+        lowestAsk.value = exchanges[exchange].ask
+        lowestAsk.exchange = exchange
       }
     })
+  }
+
+  $ : {lowestAsk.value, highestBid.value,
+    highLowDiff.value = (lowestAsk.value / highestBid.value * 100 - 100)
   }
 
   $: {coin, denom, 
@@ -363,20 +376,26 @@
   </div>
   <table class="table">
     <thead>
-      <tr>
+      <tr class="stat-tr">
         <th></th>
         <th>Highest Bid</th>
         <th>Lowest Ask</th>
         <th>Widest Spread</th>
+        <th>Highest/Lowest diff</th>
       </tr>
-      <tr>
+      <tr class="stat-tr">
         <td>Value</td>
-        <td>{highestBid}</td>
-        <td>{lowestAsk}</td>
-        <td>{widestSpread.toFixed(3)}%</td>
+        <td class="stat-td">{highestBid.value}</td>
+        <td class="stat-td">{lowestAsk.value}</td>
+        <td class="stat-td">{widestSpread.value.toFixed(3)}%</td>
+        <td class="stat-td">{highLowDiff.value.toFixed(3)}%</td>
       </tr>
-      <tr>
+      <tr class="stat-tr">
         <td>Exchange</td>
+        <td class="stat-td">{highestBid.exchange}</td>
+        <td class="stat-td">{lowestAsk.exchange}</td>
+        <td class="stat-td">{widestSpread.exchange}</td>
+        <td class="stat-td">{highLowDiff.exchange}</td>
       </tr>
     </thead>
   </table>
@@ -532,5 +551,13 @@
     padding: 0.5rem;
     border-bottom: 1px solid #d0d0d0;
     overflow: hidden;
+  }
+  .stat-tr {
+    color: white;
+    border-bottom: 1px solid white;
+  }
+  .stat-td {
+    color: white;
+    border: 1px solid white;
   }
 </style>
