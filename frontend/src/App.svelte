@@ -55,9 +55,6 @@
       exchanges[exchange].ask = ask
       exchanges[exchange].askVolume = askVolume
     })
-
-    console.log("exchangeMap | ", exchangeMap)
-    console.log("exchanges2[\"Binance\"]| ", exchanges["Binance"])
   })
 
   let coin: string = ''
