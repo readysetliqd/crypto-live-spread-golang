@@ -137,111 +137,12 @@
     exchanges[exchange].pairs = result
   }
   
-  function connectWebsocket(exchange, pair) {
+  async function connectWebsocket(exchange, pair): Promise<void> {
     console.log('connectWebsocket called', exchange)
-    switch (exchange) {
-      case 'Binance':
-        connectBinanceSpotWebsocket(pair)
-        break
-      case 'Binance (USD-M)':
-        connectBinanceUsdmWebsocket(pair)
-        break
-      case 'Binance (COIN-M)':
-        connectBinanceCoinmWebsocket(pair)
-        break
-      case 'Binance US':
-        connectBinanceUsWebsocket(pair)
-        break
-      case 'Bitget':
-        connectBitgetSpotWebsocket(pair)
-        break
-      case 'Bitget (Futures)':
-        connectBitgetFuturesWebsocket(pair)
-        break
-      case 'Bybit':
-        connectBybitSpotWebsocket(pair)
-        break
-      case 'Bybit (Futures)':
-        connectBybitFuturesWebsocket(pair)
-        break
-      case 'Coinbase':
-        connectCoinbaseSpotWebsocket(pair)
-        break
-      case 'DYDX':
-        connectDydxWebsocket(pair)
-        break
-      case 'HyperliquidX':
-        connectHyperliquidxWebsocket(pair)
-        break
-      case 'Kraken':
-        connectKrakenSpotWebsocket(pair)
-        break
-      case 'Kraken (Futures)':
-        connectKrakenFuturesWebsocket(pair)
-        break
-      case 'Okx':
-        connectOkxSpotWebsocket(pair)
-        break
-      case 'Okx (Swaps)':
-        connectOkxSwapsWebsocket(pair)
-        break
-      case 'Upbit':
-        connectUpbitWebsocket(pair)
-        break
-    }
+    await go.ConnectWebsocket(exchange, pair)
   }
-  //#region connectExchangeWebsocket(pair) functions
-  async function connectKrakenSpotWebsocket(pair): Promise<void> {
-    const result = await go.ConnectKrakenSpotWebsocket(pair)
-  }
-  async function connectBinanceSpotWebsocket(pair): Promise<void> {
-    const result = await go.ConnectBinanceSpotWebsocket(pair)
-  }
-  async function connectBinanceUsdmWebsocket(pair): Promise<void> {
-    const result = await go.ConnectBinanceUsdmWebsocket(pair)
-  }
-  async function connectBinanceCoinmWebsocket(pair): Promise<void> {
-    const result = await go.ConnectBinanceCoinmWebsocket(pair)
-  }
-  async function connectBinanceUsWebsocket(pair): Promise<void> {
-    const result = await go.ConnectBinanceUsWebsocket(pair)
-  }
-  async function connectBitgetSpotWebsocket(pair): Promise<void> {
-    const result = await go.ConnectBitgetSpotWebsocket(pair)
-  }
-  async function connectBitgetFuturesWebsocket(pair): Promise<void> {
-    const result = await go.ConnectBitgetFuturesWebsocket(pair)
-  }
-  async function connectBybitSpotWebsocket(pair): Promise<void> {
-    const result = await go.ConnectBybitSpotWebsocket(pair)
-  }
-  async function connectBybitFuturesWebsocket(pair): Promise<void> {
-    const result = await go.ConnectBybitFuturesWebsocket(pair)
-  }
-  async function connectCoinbaseSpotWebsocket(pair): Promise<void> {
-    const result = await go.ConnectCoinbaseSpotWebsocket(pair)
-  }
-  async function connectDydxWebsocket(pair):Promise<void> {
-    const result = await go.ConnectDydxWebsocket(pair)
-  }
-  async function connectHyperliquidxWebsocket(pair): Promise<void> {
-    const result = await go.ConnectHyperliquidxWebsocket(pair)
-  }
-  async function connectKrakenFuturesWebsocket(pair): Promise<void> {
-    const result = await go.ConnectKrakenFuturesWebsocket(pair)
-  }
-  async function connectOkxSpotWebsocket(pair): Promise<void> {
-    const result = await go.ConnectOkxSpotWebsocket(pair)
-  }
-  async function connectOkxSwapsWebsocket(pair): Promise<void> {
-    const result = await go.ConnectOkxSwapsWebsocket(pair)
-  }
-  async function connectUpbitWebsocket(pair): Promise<void> {
-    const result = await go.ConnectUpbitWebsocket(pair)
-  }
-  //#endregion
 
-  const selectPair= (event) => {
+  const selectPair = (event) => {
     const [selectedPair, exchange] = event.target.value.split(',')
     connectWebsocket(exchange, selectedPair)
   }

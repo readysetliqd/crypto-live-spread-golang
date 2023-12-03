@@ -66,10 +66,10 @@ export function ConnectUpbitWebsocket(arg1) {
   return window['go']['main']['App']['ConnectUpbitWebsocket'](arg1);
 }
 
-export function FetchPairs(arg1) {
-  return window['go']['main']['App']['FetchPairs'](arg1);
+export function ConnectWebsocket(arg1, arg2) {
+  return window['go']['main']['App']['ConnectWebsocket'](arg1, arg2);
 }
 
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
+export function FetchPairs(arg1) {
+  return window['go']['main']['App']['FetchPairs'](arg1);
 }

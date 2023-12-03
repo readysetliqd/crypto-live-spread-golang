@@ -33,6 +33,6 @@ export function ConnectOkxSwapsWebsocket(arg1:string):Promise<void>;
 
 export function ConnectUpbitWebsocket(arg1:string):Promise<void>;
 
-export function FetchPairs(arg1:string):Promise<Array<string>>;
+export function ConnectWebsocket(arg1:string,arg2:string):Promise<void>;
 
-export function Greet(arg1:string):Promise<string>;
+export function FetchPairs(arg1:string):Promise<Array<string>>;

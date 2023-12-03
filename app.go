@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"net/http"
 	"slices"
 
@@ -42,9 +42,30 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Selected market: %s", name)
+func (a *App) ConnectWebsocket(exchange string, pair string) {
+	connectFuncMap := map[string]func(string){
+		"Binance":          a.ConnectBinanceSpotWebsocket,
+		"Binance (USD-M)":  a.ConnectBinanceUsdmWebsocket,
+		"Binance (COIN-M)": a.ConnectBinanceCoinmWebsocket,
+		"Binance US":       a.ConnectBinanceUsWebsocket,
+		"Bitget":           a.ConnectBitgetSpotWebsocket,
+		"Bitget (Futures)": a.ConnectBitgetFuturesWebsocket,
+		"Bybit":            a.ConnectBybitSpotWebsocket,
+		"Bybit (Futures)":  a.ConnectBybitFuturesWebsocket,
+		"Coinbase":         a.ConnectCoinbaseSpotWebsocket,
+		"DYDX":             a.ConnectDydxWebsocket,
+		"HyperliquidX":     a.ConnectHyperliquidxWebsocket,
+		"Kraken":           a.ConnectKrakenSpotWebsocket,
+		"Kraken (Futures)": a.ConnectKrakenFuturesWebsocket,
+		"Okx":              a.ConnectOkxSpotWebsocket,
+		"Okx (Swaps)":      a.ConnectOkxSwapsWebsocket,
+		"Upbit":            a.ConnectUpbitWebsocket,
+	}
+	if function, exists := connectFuncMap[exchange]; exists {
+		go function(pair)
+	} else {
+		log.Fatal("ConnectWebsocket() error | Function not found for exchange: ", exchange)
+	}
 }
 
 func (a *App) ConnectBinanceSpotWebsocket(pair string) {
@@ -258,17 +279,22 @@ func (a *App) FetchPairs(exchange string) []string {
 		"Okx (Swaps)":      okxswaps.FetchPairs,
 		"Upbit":            upbit.FetchPairs,
 	}
-	switch s, err := fetchFuncMap[exchange](); err {
-	case 0:
-		slices.Sort(s)
-		return s
-	case 1:
-		runtime.EventsEmit(a.ctx, "Unspecified error")
-		return s
-	case http.StatusForbidden:
-		runtime.EventsEmit(a.ctx, "HTTP Forbidden")
-		return s
-	default:
-		return s
+	if function, exists := fetchFuncMap[exchange]; exists {
+		switch s, err := function(); err {
+		case 0:
+			slices.Sort(s)
+			return s
+		case 1:
+			runtime.EventsEmit(a.ctx, "Unspecified error")
+			return s
+		case http.StatusForbidden:
+			runtime.EventsEmit(a.ctx, "HTTP Forbidden")
+			return s
+		default:
+			return s
+		}
+	} else {
+		log.Fatal("FetchPairs() error | Function not found for exchange: ", exchange)
+		return []string{}
 	}
 }
