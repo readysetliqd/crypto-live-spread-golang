@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { EventsOn } from '../wailsjs/runtime'
+  import { EventsEmit, EventsOn } from '../wailsjs/runtime'
   import { onMount } from 'svelte'
   import { Svroller } from "svrollbar"
   import * as go from '../wailsjs/go/main/App.js'
@@ -14,10 +14,21 @@
     ask: number = Number.MAX_VALUE
     bid: number = null
     bidVolume: number = null
+    subscribed: boolean = false
+    selectedPair: string = ""
 
     constructor(name: string, category: Category) {
       this.name = name
       this.category = category
+    }
+
+    resetStats() {
+      this.askVolume = null
+      this.ask = Number.MAX_VALUE
+      this.bid = null
+      this.bidVolume = null
+      this.subscribed = false
+      this.selectedPair = ""
     }
   }
 
@@ -108,6 +119,8 @@
   }
 
   function getRecommendedPairs(exchange) {
+    coin = coin.toUpperCase()
+    denom = denom.toUpperCase()
     let coinInput: string
     let denomInput: string
     if ((exchange == "Kraken" || exchange == "Kraken (Futures)") && (coin == "BTC" || coin == "")) {
@@ -137,6 +150,7 @@
     exchanges[exchange].pairs = result
   }
   
+
   async function connectWebsocket(exchange, pair): Promise<void> {
     console.log('connectWebsocket called', exchange)
     await go.ConnectWebsocket(exchange, pair)
@@ -144,14 +158,23 @@
 
   const selectPair = (event) => {
     const [selectedPair, exchange] = event.target.value.split(',')
-    connectWebsocket(exchange, selectedPair)
+    if (!exchanges[exchange].subscribed) {
+      connectWebsocket(exchange, selectedPair)
+      exchanges[exchange].subscribed = true
+      exchanges[exchange].selectedPair = selectedPair
+    }
   }
 
   // Define a function to toggle the checked status of an exchange
   function toggleExchange(exchange) {
     console.log("exchange checked", exchanges)
-    fetchPairs(exchange.name)
     exchange.checked = !exchange.checked;
+    if (exchange.checked) {
+      fetchPairs(exchange.name)
+    } else {
+      EventsEmit("stopGoroutine", exchange.name)
+      exchange.resetStats()
+    }
   }
 </script>
 
@@ -159,11 +182,11 @@
   <div class="body">
   <div class="title">Enter coin to track below</div>
   <div class="input-box" id="input">
-    <input autocomplete="off" bind:value={coin} class="input" id="coin" type="text" placeholder="BTC"/>
+    <input autocomplete="off" bind:value={coin} class="input" id="coin" type="text" placeholder="BTC" style="text-transform: uppercase;"/>
   </div>
   <div class="title">Enter denominator to track below (if empty, defaults to USD)</div>
   <div class="input-box" id="input">
-    <input autocomplete="off" bind:value={denom} class="input" id="denom" type="text" placeholder="USD"/>
+    <input autocomplete="off" bind:value={denom} class="input" id="denom" type="text" placeholder="USD" style="text-transform: uppercase;"/>
   </div>
   <table class="table">
     <thead>
@@ -223,6 +246,7 @@
       </thead>
       <tbody>
         <tr>
+          {#if !exchanges[exchange].subscribed}
           <td class="td1">
             <select on:change={selectPair} class="dropdown">
               <option selected disabled>Select pair...</option>
@@ -241,7 +265,10 @@
                 {/each}
               </optgroup>
               </select>
-          </td>
+            </td>
+            {:else}
+            <td class="td1">{exchanges[exchange].selectedPair}</td>
+            {/if}
           <td class="td2">{exchanges[exchange].bidVolume}</td>
           <td class="td2">{exchanges[exchange].bid}</td>
           <td class="td2">{exchanges[exchange].ask}</td>

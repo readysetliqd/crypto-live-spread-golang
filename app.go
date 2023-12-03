@@ -63,14 +63,28 @@ func (a *App) ConnectWebsocket(exchange string, pair string) {
 	}
 	if connectFunc, exists := connectFuncMap[exchange]; exists {
 		dataChan := make(chan data.Spread)
+		quit := make(chan bool)
 		go connectFunc(dataChan, pair)
-		var spreadData = data.Spread{}
-		for {
-			select {
-			case spreadData = <-dataChan:
-				runtime.EventsEmit(a.ctx, "spreadData", exchange, spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+		go func() {
+			var spreadData = data.Spread{}
+			for {
+				select {
+				case spreadData = <-dataChan:
+					runtime.EventsEmit(a.ctx, "spreadData", exchange, spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+				case <-quit:
+					return
+				}
 			}
-		}
+		}()
+		runtime.EventsOn(a.ctx, "stopGoroutine", func(optionalData ...interface{}) {
+			if len(optionalData) > 0 {
+				if e, ok := optionalData[0].(string); ok && e == exchange {
+					log.Println("Quitting goroutine exchange: ", e)
+					close(quit)
+					quit = make(chan bool)
+				}
+			}
+		})
 	} else {
 		log.Fatal("ConnectWebsocket() error | Function not found for exchange: ", exchange)
 	}
