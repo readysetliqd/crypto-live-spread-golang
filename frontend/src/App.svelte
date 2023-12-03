@@ -11,7 +11,7 @@
     pairs: string[] = []
     recommended: string[] = []
     askVolume: number = null
-    ask: number = Number.MAX_VALUE
+    ask: number = null
     bid: number = null
     bidVolume: number = null
     subscribed: boolean = false
@@ -24,7 +24,7 @@
 
     resetStats() {
       this.askVolume = null
-      this.ask = Number.MAX_VALUE
+      this.ask = null
       this.bid = null
       this.bidVolume = null
       this.subscribed = false
@@ -34,7 +34,7 @@
 
   class Stat {
     value: number = null
-    exchange: string = null    
+    exchange: string = null
   }
 
   type Category = "Spot" | "Futures" | "Hybrid DEX"
@@ -83,29 +83,45 @@
   let widestSpread = new Stat()
   let highLowDiff = new Stat()
   let exchangeNames = Object.keys(exchanges)
+  let subscribedCount: number = 0
 
   $: { exchanges,
-    highestBid.value = 0
-    lowestAsk.value = Number.MAX_VALUE
-    widestSpread.value = 0
+    subscribedCount = 0
     Object.keys(exchanges).forEach((exchange) => {
-      let spread = 0
-      if (exchanges[exchange].bid != null) {
-        spread = (exchanges[exchange].ask / exchanges[exchange].bid * 100 - 100)
-      }
-      if (spread > widestSpread.value) {
-        widestSpread.value = spread
-        widestSpread.exchange = exchange
-      }
-      if (exchanges[exchange].bid > highestBid.value) {
-        highestBid.value = exchanges[exchange].bid
-        highestBid.exchange = exchange
-      } 
-      if (exchanges[exchange].ask < lowestAsk.value) {
-        lowestAsk.value = exchanges[exchange].ask
-        lowestAsk.exchange = exchange
+      if (exchanges[exchange].subscribed == true) {
+        subscribedCount += 1
       }
     })
+    if (subscribedCount > 0) {
+      highestBid.value = 0
+      lowestAsk.value = Number.MAX_VALUE
+      widestSpread.value = 0
+      Object.keys(exchanges).forEach((exchange) => {
+        let spread = 0
+        if (exchanges[exchange].bid != null) {
+          spread = (exchanges[exchange].ask / exchanges[exchange].bid * 100 - 100)
+        }
+        if (spread > widestSpread.value) {
+          widestSpread.value = spread
+          widestSpread.exchange = exchange
+        }
+        if (exchanges[exchange].bid > highestBid.value) {
+          highestBid.value = exchanges[exchange].bid
+          highestBid.exchange = exchange
+        } 
+        if (exchanges[exchange].ask != null) {
+          if (exchanges[exchange].ask < lowestAsk.value) {
+            lowestAsk.value = exchanges[exchange].ask
+            lowestAsk.exchange = exchange
+          }
+        }
+      })
+    } else {
+      console.log("calling stat resets")
+      widestSpread = new Stat()
+      highestBid = new Stat()
+      lowestAsk = new Stat()
+    }
   }
 
   $ : {lowestAsk.value, highestBid.value,
@@ -201,8 +217,20 @@
         <td>Value</td>
         <td class="stat-td">{highestBid.value}</td>
         <td class="stat-td">{lowestAsk.value}</td>
-        <td class="stat-td">{widestSpread.value.toFixed(3)}%</td>
-        <td class="stat-td">{highLowDiff.value.toFixed(3)}%</td>
+        <td class="stat-td">
+          {#if widestSpread.value != null}
+          {widestSpread.value.toFixed(3)}%
+          {:else}
+          {widestSpread.value}
+          {/if}
+        </td>
+        <td class="stat-td">
+          {#if widestSpread.value != null}
+          {highLowDiff.value.toFixed(3)}%
+          {:else}
+          {widestSpread.value}
+          {/if}
+        </td>
       </tr>
       <tr class="stat-tr">
         <td>Exchange</td>
