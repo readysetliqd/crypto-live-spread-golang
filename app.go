@@ -43,220 +43,36 @@ func (a *App) startup(ctx context.Context) {
 }
 
 func (a *App) ConnectWebsocket(exchange string, pair string) {
-	connectFuncMap := map[string]func(string){
-		"Binance":          a.ConnectBinanceSpotWebsocket,
-		"Binance (USD-M)":  a.ConnectBinanceUsdmWebsocket,
-		"Binance (COIN-M)": a.ConnectBinanceCoinmWebsocket,
-		"Binance US":       a.ConnectBinanceUsWebsocket,
-		"Bitget":           a.ConnectBitgetSpotWebsocket,
-		"Bitget (Futures)": a.ConnectBitgetFuturesWebsocket,
-		"Bybit":            a.ConnectBybitSpotWebsocket,
-		"Bybit (Futures)":  a.ConnectBybitFuturesWebsocket,
-		"Coinbase":         a.ConnectCoinbaseSpotWebsocket,
-		"DYDX":             a.ConnectDydxWebsocket,
-		"HyperliquidX":     a.ConnectHyperliquidxWebsocket,
-		"Kraken":           a.ConnectKrakenSpotWebsocket,
-		"Kraken (Futures)": a.ConnectKrakenFuturesWebsocket,
-		"Okx":              a.ConnectOkxSpotWebsocket,
-		"Okx (Swaps)":      a.ConnectOkxSwapsWebsocket,
-		"Upbit":            a.ConnectUpbitWebsocket,
+	connectFuncMap := map[string]func(chan data.Spread, string){
+		"Binance":          binancespot.GetSpread,
+		"Binance (USD-M)":  binanceusdm.GetSpread,
+		"Binance (COIN-M)": binancecoinm.GetSpread,
+		"Binance US":       binanceus.GetSpread,
+		"Bitget":           bitgetspot.GetSpread,
+		"Bitget (Futures)": bitgetfutures.GetSpread,
+		"Bybit":            bybitspot.GetSpread,
+		"Bybit (Futures)":  bybitfutures.GetSpread,
+		"Coinbase":         coinbasespot.GetSpread,
+		"DYDX":             dydx.GetSpread,
+		"HyperliquidX":     hyperliquidx.GetSpread,
+		"Kraken":           krakenspot.GetSpread,
+		"Kraken (Futures)": krakenfutures.GetSpread,
+		"Okx":              okxspot.GetSpread,
+		"Okx (Swaps)":      okxswaps.GetSpread,
+		"Upbit":            upbit.GetSpread,
 	}
-	if function, exists := connectFuncMap[exchange]; exists {
-		go function(pair)
+	if connectFunc, exists := connectFuncMap[exchange]; exists {
+		dataChan := make(chan data.Spread)
+		go connectFunc(dataChan, pair)
+		var spreadData = data.Spread{}
+		for {
+			select {
+			case spreadData = <-dataChan:
+				runtime.EventsEmit(a.ctx, "spreadData", exchange, spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
+			}
+		}
 	} else {
 		log.Fatal("ConnectWebsocket() error | Function not found for exchange: ", exchange)
-	}
-}
-
-func (a *App) ConnectBinanceSpotWebsocket(pair string) {
-	channelBinanceSpot := make(chan data.Spread)
-	go binancespot.GetSpread(channelBinanceSpot, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBinanceSpot:
-			runtime.EventsEmit(a.ctx, "spreadData", "Binance", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectBinanceUsdmWebsocket(pair string) {
-	channelBinanceUsdm := make(chan data.Spread)
-	go binanceusdm.GetSpread(channelBinanceUsdm, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBinanceUsdm:
-			runtime.EventsEmit(a.ctx, "spreadData", "Binance (USD-M)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectBinanceCoinmWebsocket(pair string) {
-	channelBinanceCoinm := make(chan data.Spread)
-	go binancecoinm.GetSpread(channelBinanceCoinm, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBinanceCoinm:
-			runtime.EventsEmit(a.ctx, "spreadData", "Binance (COIN-M)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectBinanceUsWebsocket(pair string) {
-	channelBinanceUs := make(chan data.Spread)
-	go binanceus.GetSpread(channelBinanceUs, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBinanceUs:
-			runtime.EventsEmit(a.ctx, "spreadData", "Binance US", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectBitgetSpotWebsocket(pair string) {
-	channelBitgetSpot := make(chan data.Spread)
-	go bitgetspot.GetSpread(channelBitgetSpot, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBitgetSpot:
-			runtime.EventsEmit(a.ctx, "spreadData", "Bitget", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectBitgetFuturesWebsocket(pair string) {
-	channelBitgetFutures := make(chan data.Spread)
-	go bitgetfutures.GetSpread(channelBitgetFutures, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBitgetFutures:
-			runtime.EventsEmit(a.ctx, "spreadData", "Bitget (Futures)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectBybitSpotWebsocket(pair string) {
-	channelBybitSpot := make(chan data.Spread)
-	go bybitspot.GetSpread(channelBybitSpot, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBybitSpot:
-			runtime.EventsEmit(a.ctx, "spreadData", "Bybit", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectBybitFuturesWebsocket(pair string) {
-	channelBybitFutures := make(chan data.Spread)
-	go bybitfutures.GetSpread(channelBybitFutures, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelBybitFutures:
-			runtime.EventsEmit(a.ctx, "spreadData", "Bybit (Futures)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectCoinbaseSpotWebsocket(pair string) {
-	channelCoinbaseSpot := make(chan data.Spread)
-	go coinbasespot.GetSpread(channelCoinbaseSpot, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelCoinbaseSpot:
-			runtime.EventsEmit(a.ctx, "spreadData", "Coinbase", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectDydxWebsocket(pair string) {
-	channelDydx := make(chan data.Spread)
-	go dydx.GetSpread(channelDydx, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelDydx:
-			runtime.EventsEmit(a.ctx, "spreadData", "DYDX", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectHyperliquidxWebsocket(pair string) {
-	channelHyperliquidx := make(chan data.Spread)
-	go hyperliquidx.GetSpread(channelHyperliquidx, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelHyperliquidx:
-			runtime.EventsEmit(a.ctx, "spreadData", "HyperliquidX", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectKrakenSpotWebsocket(pair string) {
-	channelKrakenSpot := make(chan data.Spread)
-	go krakenspot.GetSpread(channelKrakenSpot, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelKrakenSpot:
-			runtime.EventsEmit(a.ctx, "spreadData", "Kraken", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectKrakenFuturesWebsocket(pair string) {
-	channelKrakenFutures := make(chan data.Spread)
-	go krakenfutures.GetSpread(channelKrakenFutures, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelKrakenFutures:
-			runtime.EventsEmit(a.ctx, "spreadData", "Kraken (Futures)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectOkxSpotWebsocket(pair string) {
-	channelOkxSpot := make(chan data.Spread)
-	go okxspot.GetSpread(channelOkxSpot, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelOkxSpot:
-			runtime.EventsEmit(a.ctx, "spreadData", "Okx", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectOkxSwapsWebsocket(pair string) {
-	channelOkxSwaps := make(chan data.Spread)
-	go okxswaps.GetSpread(channelOkxSwaps, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelOkxSwaps:
-			runtime.EventsEmit(a.ctx, "spreadData", "Okx (Swaps)", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
-	}
-}
-
-func (a *App) ConnectUpbitWebsocket(pair string) {
-	channelUpbit := make(chan data.Spread)
-	go upbit.GetSpread(channelUpbit, pair)
-	var spreadData = data.Spread{}
-	for {
-		select {
-		case spreadData = <-channelUpbit:
-			runtime.EventsEmit(a.ctx, "spreadData", "Upbit", spreadData.BidVolume, spreadData.Bid, spreadData.Ask, spreadData.AskVolume)
-		}
 	}
 }
 
@@ -279,8 +95,8 @@ func (a *App) FetchPairs(exchange string) []string {
 		"Okx (Swaps)":      okxswaps.FetchPairs,
 		"Upbit":            upbit.FetchPairs,
 	}
-	if function, exists := fetchFuncMap[exchange]; exists {
-		switch s, err := function(); err {
+	if fetchFunc, exists := fetchFuncMap[exchange]; exists {
+		switch s, err := fetchFunc(); err {
 		case 0:
 			slices.Sort(s)
 			return s
