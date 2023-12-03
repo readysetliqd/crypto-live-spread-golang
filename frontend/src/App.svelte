@@ -60,6 +60,9 @@
       exchanges[exchange].ask = ask
       exchanges[exchange].askVolume = askVolume
     })
+    EventsOn("HTTP Forbidden", () => {
+      alert("HTTP Error 403 Forbidden\nYour IP may be geo-blocked by the server. Check exchange's supported locations and try again.")
+    })
   })
 
   let coin: string = ''
@@ -128,59 +131,12 @@
     }
   }
 
-  function fetchPairs(exchange) {
+  async function fetchPairs(exchange): Promise<void> {
     console.log('fetchPairs called', exchange)
-    switch (exchange) {
-      case 'Binance':
-        fetchBinanceSpotPairs(exchange)
-        break
-      case 'Binance (USD-M)':
-        fetchBinanceUsdmPairs(exchange)
-        break
-      case 'Binance (COIN-M)':
-        fetchBinanceCoinmPairs(exchange)
-        break
-      case 'Binance US':
-        fetchBinanceUsSpotPairs(exchange)
-        break
-      case 'Bitget':
-        fetchBitgetSpotPairs(exchange)
-        break
-      case 'Bitget (Futures)':
-        fetchBitgetFuturesPairs(exchange)
-        break
-      case 'Bybit':
-        fetchBybitSpotPairs(exchange)
-        break
-      case 'Bybit (Futures)':
-        fetchBybitFuturesPairs(exchange)
-        break
-      case 'Coinbase':
-        fetchCoinbaseSpotPairs(exchange)
-        break
-      case 'DYDX':
-        fetchDydxPairs(exchange)
-        break
-      case 'HyperliquidX':
-        fetchHyperliquidxPairs(exchange)
-        break
-      case 'Kraken':
-        fetchKrakenSpotPairs(exchange)
-        break
-      case 'Kraken (Futures)':
-        fetchKrakenFuturesPairs(exchange)
-        break
-      case 'Okx':
-        fetchOkxSpotPairs(exchange)
-        break
-      case 'Okx (Swaps)':
-        fetchOkxSwapsPairs(exchange)
-        break
-      case 'Upbit':
-        fetchUpbitSpotPairs(exchange)
-        break
-    }
+    const result = await go.FetchPairs(exchange)
+    exchanges[exchange].pairs = result
   }
+  
   function connectWebsocket(exchange, pair) {
     console.log('connectWebsocket called', exchange)
     switch (exchange) {
@@ -234,72 +190,6 @@
         break
     }
   }
-  //#region fetchExchangePairs(exchange) functions
-  async function fetchBinanceSpotPairs(exchange): Promise<void> {
-    const result = await go.FetchBinanceSpotPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchBinanceUsdmPairs(exchange): Promise<void> {
-    const result = await go.FetchBinanceUsdmPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchBinanceCoinmPairs(exchange): Promise<void> {
-    const result = await go.FetchBinanceCoinmPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchBinanceUsSpotPairs(exchange): Promise<void> {
-    const result = await go.FetchBinanceUsSpotPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchBitgetSpotPairs(exchange): Promise<void> {
-    const result = await go.FetchBitgetSpotPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchBitgetFuturesPairs(exchange): Promise<void> {
-    const result = await go.FetchBitgetFuturesPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchBybitSpotPairs(exchange): Promise<void> {
-    const result = await go.FetchBybitSpotPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchBybitFuturesPairs(exchange): Promise<void> {
-    const result = await go.FetchBybitFuturesPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchCoinbaseSpotPairs(exchange): Promise<void> {
-    const result = await go.FetchCoinbaseSpotPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchDydxPairs(exchange): Promise<void> {
-    const result = await go.FetchDydxPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchHyperliquidxPairs(exchange): Promise<void> {
-    const result = await go.FetchHyperliquidxPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchKrakenSpotPairs(exchange): Promise<void> {
-    const result = await go.FetchKrakenSpotPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchKrakenFuturesPairs(exchange): Promise<void> {
-    const result = await go.FetchKrakenFuturesPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchOkxSpotPairs(exchange): Promise<void> {
-    const result = await go.FetchOkxSpotPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchOkxSwapsPairs(exchange): Promise<void> {
-    const result = await go.FetchOkxSwapsPairs()
-    exchanges[exchange].pairs = result
-  }
-  async function fetchUpbitSpotPairs(exchange): Promise<void> {
-    const result = await go.FetchUpbitSpotPairs()
-    exchanges[exchange].pairs = result
-  }
-  //#endregion
   //#region connectExchangeWebsocket(pair) functions
   async function connectKrakenSpotWebsocket(pair): Promise<void> {
     const result = await go.ConnectKrakenSpotWebsocket(pair)

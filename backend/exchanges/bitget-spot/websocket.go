@@ -11,8 +11,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-var pong = []byte{0} // TO DO: figure out what pong frames are
-
 // Accepts a channel and a pair. Connects to websocket api to updated channel
 // with the live bid/ask spread for that pair
 func GetSpread(updateChannel chan data.Spread, pair string) {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 
 	"github.com/readysetliqd/crypto-live-spread-golang/backend/data"
@@ -238,98 +239,36 @@ func (a *App) ConnectUpbitWebsocket(pair string) {
 	}
 }
 
-func (a *App) FetchBinanceSpotPairs() []string {
-	s := binancespot.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchBinanceUsdmPairs() []string {
-	s := binanceusdm.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchBinanceCoinmPairs() []string {
-	s := binancecoinm.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchBinanceUsSpotPairs() []string {
-	s := binanceus.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchBitgetSpotPairs() []string {
-	s := bitgetspot.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchBitgetFuturesPairs() []string {
-	s := bitgetfutures.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchBybitSpotPairs() []string {
-	s := bybitspot.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchBybitFuturesPairs() []string {
-	s := bybitfutures.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchCoinbaseSpotPairs() []string {
-	s := coinbasespot.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchDydxPairs() []string {
-	s := dydx.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchHyperliquidxPairs() []string {
-	s := hyperliquidx.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchKrakenSpotPairs() []string {
-	s := krakenspot.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchKrakenFuturesPairs() []string {
-	s := krakenfutures.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchOkxSpotPairs() []string {
-	s := okxspot.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchOkxSwapsPairs() []string {
-	s := okxswaps.FetchPairs()
-	slices.Sort(s)
-	return s
-}
-
-func (a *App) FetchUpbitSpotPairs() []string {
-	s := upbit.FetchPairs()
-	slices.Sort(s)
-	return s
+func (a *App) FetchPairs(exchange string) []string {
+	fetchFuncMap := map[string]func() ([]string, int){
+		"Binance":          binancespot.FetchPairs,
+		"Binance (USD-M)":  binanceusdm.FetchPairs,
+		"Binance (COIN-M)": binancecoinm.FetchPairs,
+		"Binance US":       binanceus.FetchPairs,
+		"Bitget":           bitgetspot.FetchPairs,
+		"Bitget (Futures)": bitgetfutures.FetchPairs,
+		"Bybit":            bybitspot.FetchPairs,
+		"Bybit (Futures)":  bybitfutures.FetchPairs,
+		"Coinbase":         coinbasespot.FetchPairs,
+		"DYDX":             dydx.FetchPairs,
+		"HyperliquidX":     hyperliquidx.FetchPairs,
+		"Kraken":           krakenspot.FetchPairs,
+		"Kraken (Futures)": krakenfutures.FetchPairs,
+		"Okx":              okxspot.FetchPairs,
+		"Okx (Swaps)":      okxswaps.FetchPairs,
+		"Upbit":            upbit.FetchPairs,
+	}
+	switch s, err := fetchFuncMap[exchange](); err {
+	case 0:
+		slices.Sort(s)
+		return s
+	case 1:
+		runtime.EventsEmit(a.ctx, "Unspecified error")
+		return s
+	case http.StatusForbidden:
+		runtime.EventsEmit(a.ctx, "HTTP Forbidden")
+		return s
+	default:
+		return s
+	}
 }
